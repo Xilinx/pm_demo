@@ -30,7 +30,6 @@ following tools installed and follow the [build instructions](#build-instruction
 [2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
 
 ![Power management demo](doc/vck190_board.jpg)
-### Power domains
 
 
 ![Power domains](doc/versal_power_domains.jpg)
@@ -43,29 +42,29 @@ Defaults:
  PETALINUX_BSP=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/bsp/release/xilinx-vck190-v2022.2-final.bsp
  PETALINUX_SETTINGS=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/tool/petalinux-v2022.2-final/settings.sh
  VITIS_SETTINGS=/proj/xbuilds/2022.2_daily_latest/installs/lin64/Vitis/2022.2/settings64.sh
- Note: Change RELEASE=202x.x in Makefile to build for different rleases.
+ Note: Modify Makefile RELEASE=202x.x to build for different rleases.
 ```
 Vitis and PetaLinux tools need to be installed before building any design.
 ```bash
 export PETALINUX_BSP=<PetaLinux_BSP_path>
 export PETALINUX_SETTINGS=<PetaLinux_install_path>/settings.sh
 export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
-./settings.sh in a shell session to verify environment variable settings
+./settings.sh # Verify environment variable settings in a shell session
 ```
 
-Use make (or ./xmake to use docker [petalinux only]) to build hardware design,
-petalinux, rpu application and boot image. TARGET=[vck190 | vmk180 | zcu102].
+Use make to build hardware design, petalinux (or ./xmake to use docker), rpu application
+and boot image for `TARGET=[vck190|vmk180|zcu102]`.
 The final artifacts in build/images
 Note: It will take several hours (> 6 hours) to complete the build
 
 - `make`
     or
-- `make TARGET=vmk180`
+- `make TARGET=[vck190|vmk180|zcu102]`
     or
-- `make hw_design TARGET=vmk180`
-- `make petalinux TARGET=vmk180`
-- `make rpu_app TARGET=vmk180`
-- `make boot_image TARGET=vmk180`
+- `make hw_design TARGET=[vck190|vmk180|zcu102]`
+- `make petalinux TARGET=[vck190|vmk180|zcu102]`
+- `make rpu_app TARGET=[vck190|vmk180|zcu102]`
+- `make boot_image TARGET=[vck190|vmk180|zcu102]`
 
 ### Directory Structure
 ```
@@ -116,7 +115,6 @@ Note: It will take several hours (> 6 hours) to complete the build
 │   ├─ Makefile
 │   ├─ pm_init.c
 │   ├─ pm_init.h
-│   ├─ README.md
 │   ├─ rtc.c
 │   └─ rtc.h
 ├─ platform
@@ -172,7 +170,7 @@ Note: It will take several hours (> 6 hours) to complete the build
 </font>
 
 ## References
-### Install and setup docker
+##### Install and setup docker
 - curl -fsSL https://get.docker.com -o get-docker.sh
 - `sh get-docker.sh`
 - `sudo groupadd docker`
@@ -182,7 +180,7 @@ Note: It will take several hours (> 6 hours) to complete the build
 - `sudo chmod 777 /var/run/docker.sock`
   <b>`Note:`</b> This may be needed if there is a permission denied error
 
-### Helpful docker commands
+##### Helpful docker commands
 - Restart docker:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sudo systemctl restart docker`
 - List images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker images ls`
 - Stop docker containers: `docker stop $(docker ps -a -q)`
