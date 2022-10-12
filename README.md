@@ -1,0 +1,189 @@
+##### Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+##### SPDX-License-Identifier: MIT
+
+### Power management demo
+This repository contains the source code needed to recreate, modify, and extend 
+classic SOC boot power demo to demonstrate versal/ZynqMP various power modes. It
+demonstrates below power modes on vck190/vmk180/zcu102 boards.
+```
+ 1. APU, RPU, PL load (typical performance mode)<br>
+ 2. APU and RPU full load, PL is OFF (Performance mode)
+ 3. APU full load, RPU idle, PL is OFF
+ 4. APU (APU0 only) full load, RPU idle, PLD is OFF
+ 5. APU (APU0 low freq 250MHz) full, RPU idle, PL is OFF
+ 7. APU Linux Idle, RPU idle, PL is OFF (Linux Boot Idle)
+ 8. APU suspended with FPD ON, RPU idle, PL is OFF
+ 9. APU suspended with FPD OFF, RPU full load, PL is OFF
+10. APU suspended with FPD OFF, RPU idle, PL is OFF
+11. APU suspended with FPD OFF, RPU suspended, PL is OFF
+```
+
+To build sample designs from source code in this repository, you will need to have the
+following tools installed and follow the [build instructions](#build-instructions):
+
+- A Linux-based host OS supported by Vitis and PetaLinux with about 100GB free
+  disk space
+- [Vitis][1] 202x.x
+- [PetaLinux][2] 202x.x
+
+[1]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vitis.html
+[2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
+
+![Power management demo](doc/vck190_board.jpg)
+### Power domains
+
+
+![Power domains](doc/versal_power_domains.jpg)
+
+### Build Instructions
+```
+Defaults:
+ RELEASE=2022.2
+ TARGET=vck190
+ PETALINUX_BSP=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/bsp/release/xilinx-vck190-v2022.2-final.bsp
+ PETALINUX_SETTINGS=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/tool/petalinux-v2022.2-final/settings.sh
+ VITIS_SETTINGS=/proj/xbuilds/2022.2_daily_latest/installs/lin64/Vitis/2022.2/settings64.sh
+ Note: Change RELEASE=202x.x in Makefile to build for different rleases.
+```
+Vitis and PetaLinux tools need to be installed before building any design.
+```bash
+export PETALINUX_BSP=<PetaLinux_BSP_path>
+export PETALINUX_SETTINGS=<PetaLinux_install_path>/settings.sh
+export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
+./settings.sh in a shell session to verify environment variable settings
+```
+
+Use make (or ./xmake to use docker [petalinux only]) to build hardware design,
+petalinux, rpu application and boot image. TARGET=[vck190 | vmk180 | zcu102].
+The final artifacts in build/images
+Note: It will take several hours (> 6 hours) to complete the build
+
+- `make`
+    or
+- `make TARGET=vmk180`
+    or
+- `make hw_design TARGET=vmk180`
+- `make petalinux TARGET=vmk180`
+- `make rpu_app TARGET=vmk180`
+- `make boot_image TARGET=vmk180`
+
+### Directory Structure
+```
+.pm_demo
+├─ apu_app - APU application
+│   ├─ power_demo.sh - power demo script
+│   └─ power-oob.bb  - power demo binary files bitbake
+├─ doc
+│   ├─ vck190_board.jpg
+│   └─ versal_power_domains.jpg
+├─ hw   - Hardware design
+│   ├─ ip
+│   │   ├─ bufg_ctrl
+│   │   │   ├─ component.xml
+│   │   │   ├─ src
+│   │   │   │   └─ bufg_ctrl.v
+│   │   │   ├─ xgui
+│   │   │   │    └─ bufg_ctrl_v1_0.tcl
+│   │   │   └── component.xml
+│   │   └─ power
+│   │      ├─ src
+│   │      │   ├─ block_ram_daisy_chain.v
+│   │      │   ├─ generate_sfir.v
+│   │      │   ├─ logic_top.v
+│   │      │   ├─ logic.v
+│   │      │   ├─ power.v
+│   │      │   ├─ vio_bram
+│   │      │   │   └── vio_bram.xci
+│   │      │   └─ vio_top_logic
+│   │      │        └─ vio_top_logic.xci
+│   │      ├─ xgui
+│   │      │    └─ power_v1_0.tcl
+│   │      └─ component.xml
+│   ├─ xdc
+│   │   ├─ default.xdc                 - default constraints
+│   │   ├─ pl_clk_uncertainty.xdc      - clock constraints
+│   │   ├─ vck190_ddr4single_dimm1.xdc - ddr constraints
+│   │   └─ vck190.xdc - versal constraints
+│   ├─ config_bd.tcl
+│   └─ main.tcl
+├─ rpu_app - RPU application
+│   ├─ gic_setup.c
+│   ├─ gic_setup.h
+│   ├─ ipi.c
+│   ├─ ipi.h
+│   ├─ lscript.ld - Linker script
+│   ├─ main.c
+│   ├─ Makefile
+│   ├─ pm_init.c
+│   ├─ pm_init.h
+│   ├─ README.md
+│   ├─ rtc.c
+│   └─ rtc.h
+├─ platform
+│   ├─ vck190
+│   │   └─ vck190_boot.bif - BOOT.BIN, Boot Image Format file
+│   ├─ vmk180
+│   │   └─ vmk180_boot.bif - BOOT.BIN, Boot Image Format file
+│   ├─ zcu102
+│   │   ├─ boot.tcl
+│   |   └─ zcu102_boot.bif - BOOT.BIN, Boot Image Format file
+│   |─ vck_vmk_board_topology.cdo - vck190/vmk180 board topology CDO
+│   └─ uboot-env.vars
+├─ Dockerfile
+├─ .gitignore
+├─ Makefile
+├─ README.md
+├─ settings.sh - Verify petalinux, vitis paths
+└─ xmake - Docker make file (petalinux only for now)
+```
+### Test
+<b>SD:</b>
+    Copy `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` to a bootable FAT32 formatted SD Card.
+    Power up the board
+<b>jtag:</b>
+    Copy the `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` to tftp folder<br>
+    <b>zcu102:</b> Copy the `zynqmp_fsbl.elf, pmufw.elf, u-boot.elf` to tftp folder<br>
+
+-   <span style="color:green;font-size:12px">Systest#</span> `tftpd "<path to Image...>"`
+-   <span style="color:green;font-size:12px">xsdb%</span> `device program BOOT.BIN`       <b>zcu102:</b> <span style="color:green;font-size:12px">xsdb%</span> `source boot.tcl`
+-   <span style="color:green;font-size:12px">[Versal | ZynqMP]></span> `run wr_sdboot`
+-   <span style="color:green;font-size:12px">Systest#</span> `power 0 power 1`
+-   <span style="color:green;font-size:12px">Systest#</span> `bootmode "sd1_ls"`  <b>zcu102:</b> <span style="color:green;font-size:12px">xsdb%</span> `boot_sd`
+-   <span style="color:green;font-size:12px">[Versal | ZynqMP]></span> `run bt_tftp`
+-   Once petalinux is up, run the demo<br>    <span style="color:green;font-size:12px">root@xilinx-vck190-20222:~#</span> `sudo /usr/bin/power_demo.sh`
+-   Check the power rail values from the System controller<br>    <span style="color:green;font-size:12px">Systest#</span> `readpower`
+
+## Measured power
+---
+ <font size="1"> 
+
+| Power State | Description | PLD<br>Power<br>(W)|FPD<br>Power<br>(W)|LPD<br>Power<br>(W)|SoC<br>Power<br>(W)|PMC<br>Power<br>(W)|BBRAM?<br>Power<br>(W)|Total<br>Power<br>(W)|
+| :---------- | :---------- | :----------: | :----------: | :----------: | :----------: | :----------: | :-------------: | :------------: |
+|APU, RPU, PL full load|				FPD, LPD and PLD in high power mode|		43.235|	0.4784|	0.1384|	3.2754|	0.1119|	0.1082|	47.3467|
+|APU and RPU full load, PL is OFF (Performance mode)| 	R5s Active, A72s Active|			0|	0.4784|	0.1370|	3.1977|	0.1082|	0.1089|	 4.0302|
+|APU full load, RPU idle, PL is OFF|			R5s Idle, A72s Active|				0|	0.4768|	0.1284|	3.1726|	0.1074|	0.1082|	 3.9934|
+|APU (APU0 only) full load, RPU idle, PLD is OFF|	R5s Idle, 1 A72 Active|				0|	0.3710|	0.1270|	3.1363|	0.1066|	0.1089|	 3.8498|
+|APU (APU0 low freq 250MHz) full, RPU idle, PL is OFF|	R5s Idle, APU0 250MHz|				0|	0.1704|	0.1266|	3.1210|	0.1062|	0.1089|	 3.6331|
+|APU Linux Idle, RPU idle, PL is OFF (Linux Boot Idle)|	R5s Idle, 1 A72 Idle|				0|	0.1800|	0.1266|	3.1121|	0.1062|	0.1089|	 3.6338|
+|APU suspended with FPD ON, RPU idle, PL is OFF|	R5s Idle, A72s Off, DDR Self Refresh|		0|	0.0683|	0.1142|	1.2497|	0.1026|	0.1089|	 1.6437|
+|APU suspended with FPD OFF, RPU full load, PL is OFF|	R5s Active, FPD Off|				0|	0|	0.1290|	1.2416|	0.1026|	0.0848|	 1.5580|
+|APU suspended with FPD OFF, RPU idle, PL is OFF|	R5s Idle, FPD Off, DDR Self Refresh|		0|	0|	0.1134|	1.2376|	0.1022|	0.0849|	 1.5381|
+|APU suspended with FPD OFF, RPU suspended, PL is OFF|	R5s suspended, FPD Off, DDR Self Refresh|	0|	0|	0.1146|	1.2376|	0.1022|	0.0856|	 1.5681|
+</font>
+
+## References
+### Install and setup docker
+- curl -fsSL https://get.docker.com -o get-docker.sh
+- `sh get-docker.sh`
+- `sudo groupadd docker`
+- `sudo usermod -aG docker ${USER}`  
+   <b>`Note:`</b> This might require logout and log back in 
+- `sudo systemctl start docker`
+- `sudo chmod 777 /var/run/docker.sock`
+  <b>`Note:`</b> This may be needed if there is a permission denied error
+
+### Helpful docker commands
+- Restart docker:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sudo systemctl restart docker`
+- List images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker images ls`
+- Stop docker containers: `docker stop $(docker ps -a -q)`
+- Delete all images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker system prune -a`
