@@ -63,9 +63,9 @@ export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
 
 Use make to build hardware design, petalinux (or ./xmake to use docker), rpu application
 and boot image for `TARGET=[vck190|vmk180|zcu102]`.
-The final artifacts in build/images
-Note: It will take several hours (> 6 hours) to build all components.
-      Remove hwflow_xxx, rpu_app, xilinx-xxx for a clean build.
+The final artifacts in build/images<br>
+Note: It will take several hours (> 6 hours) to build all components.<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;Remove hwflow_xxx, rpu_app, xilinx-xxx for a clean build.
 - `make`
     or
 - `make TARGET=[vck190|vmk180|zcu102]`
@@ -189,7 +189,7 @@ Note: It will take several hours (> 6 hours) to build all components.
 - `sudo usermod -aG docker ${USER}`  
    <b>`Note:`</b> This might require logout and log back in 
 - `sudo systemctl start docker`
-- `sudo chmod 777 /var/run/docker.sock`
+- `sudo chmod 777 /var/run/docker.sock`<br>
   <b>`Note:`</b> This may be needed if there is a permission denied error
 
 ##### Helpful docker commands
