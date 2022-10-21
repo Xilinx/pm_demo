@@ -123,7 +123,7 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	. $(PLNX_SETTINGS) && \
 	petalinux-create -t project -s $(PLNX_BSP) && \
 	cd $(HW_PREFIX)-$(REL) && \
-	$ [[ $(TARGET) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description $(HW_XSA) && \
+	$ [[ $(TARGET) = zcu102 ]] || cp $(HW_XSA) . && \
 	cp ../../platform/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	$ [[ $(TARGET) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	sed -i -E 's/.*CONFIG_auto-login.+/CONFIG_auto-login=y/' project-spec/configs/rootfs_config && \

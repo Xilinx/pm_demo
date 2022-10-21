@@ -1,7 +1,13 @@
 ##### Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
 ##### SPDX-License-Identifier: MIT
+1. [Power management demo](#1-Power-management-demo)<br>
+2. [Build Instructions](#2-build-instructions)<br>
+3. [Directory Structure](#3-directory-structure)<br>
+4. [Test](#4-test)<br>
+5. [Measured power](#5-measured-power)<br>
+6. [References](#6-references)<br>
 
-### Power management demo
+### 1. Power management demo
 This repository contains the source code needed to recreate, modify, and extend 
 classic SOC boot power demo to demonstrate versal/ZynqMP various power modes. It
 demonstrates below power modes on vck190/vmk180/zcu102 boards.
@@ -19,7 +25,7 @@ demonstrates below power modes on vck190/vmk180/zcu102 boards.
 ```
 
 To build sample designs from source code in this repository, you will need to have the
-following tools installed and follow the [build instructions](#build-instructions):
+following tools installed and follow the [build instructions](#2-build-instructions):
 
 - A Linux-based host OS supported by Vitis and PetaLinux with about 100GB free
   disk space
@@ -29,12 +35,15 @@ following tools installed and follow the [build instructions](#build-instruction
 [1]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vitis.html
 [2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
 
-![Power management demo](doc/vck190_board.jpg)
+![VCK190/VMK180 Board](doc/vck190_board.jpg)
 
 
 ![Power domains](doc/versal_power_domains.jpg)
 
-### Build Instructions
+
+![ZCU102 Board](doc/zcu102_board.jpg)
+
+### 2. Build Instructions
 ```
 Defaults:
  RELEASE=2022.2
@@ -42,21 +51,21 @@ Defaults:
  PETALINUX_BSP=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/bsp/release/xilinx-vck190-v2022.2-final.bsp
  PETALINUX_SETTINGS=/proj/petalinux/2022.2/petalinux-v2022.2_daily_latest/tool/petalinux-v2022.2-final/settings.sh
  VITIS_SETTINGS=/proj/xbuilds/2022.2_daily_latest/installs/lin64/Vitis/2022.2/settings64.sh
- Note: Modify Makefile RELEASE=202x.x to build for different rleases.
+ Note: Modify Makefile RELEASE=202x.x to build for a different release.
 ```
 Vitis and PetaLinux tools need to be installed before building any design.
 ```bash
-export PETALINUX_BSP=<PetaLinux_BSP_path>
-export PETALINUX_SETTINGS=<PetaLinux_install_path>/settings.sh
+export PETALINUX_BSP=<PetaLinux BSP path>
+export PETALINUX_SETTINGS=<PetaLinux install path>/settings.sh
 export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
-./settings.sh # Verify environment variable settings in a shell session
+./settings.sh	# Verify environment variable settings in a shell session
 ```
 
 Use make to build hardware design, petalinux (or ./xmake to use docker), rpu application
 and boot image for `TARGET=[vck190|vmk180|zcu102]`.
 The final artifacts in build/images
-Note: It will take several hours (> 6 hours) to complete the build
-
+Note: It will take several hours (> 6 hours) to build all components.
+      Remove hwflow_xxx, rpu_app, xilinx-xxx for a clean build.
 - `make`
     or
 - `make TARGET=[vck190|vmk180|zcu102]`
@@ -66,7 +75,7 @@ Note: It will take several hours (> 6 hours) to complete the build
 - `make rpu_app TARGET=[vck190|vmk180|zcu102]`
 - `make boot_image TARGET=[vck190|vmk180|zcu102]`
 
-### Directory Structure
+### 3. Directory Structure
 ```
 .pm_demo
 ├─ apu_app - APU application
@@ -119,22 +128,22 @@ Note: It will take several hours (> 6 hours) to complete the build
 │   └─ rtc.h
 ├─ platform
 │   ├─ vck190
-│   │   └─ vck190_boot.bif - BOOT.BIN, Boot Image Format file
+│   │   └─ vck190_boot.bif - BOOT.BIN, Boot image format file
 │   ├─ vmk180
-│   │   └─ vmk180_boot.bif - BOOT.BIN, Boot Image Format file
+│   │   └─ vmk180_boot.bif - BOOT.BIN, Boot image format file
 │   ├─ zcu102
 │   │   ├─ boot.tcl
-│   |   └─ zcu102_boot.bif - BOOT.BIN, Boot Image Format file
+│   |   └─ zcu102_boot.bif - BOOT.BIN, Boot image format file
 │   |─ vck_vmk_board_topology.cdo - vck190/vmk180 board topology CDO
-│   └─ uboot-env.vars
-├─ Dockerfile
+│   └─ uboot-env.vars - u-boot environment variable
+├─ Dockerfile   - Docker file
 ├─ .gitignore
 ├─ Makefile
 ├─ README.md
-├─ settings.sh - Verify petalinux, vitis paths
-└─ xmake - Docker make file (petalinux only for now)
+├─ settings.sh  - Verify petalinux, vitis paths
+└─ xmake        - Docker make file (petalinux only for now)
 ```
-### Test
+### 4. Test
 <b>SD:</b>
     Copy `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` to a bootable FAT32 formatted SD Card.
     Power up the board
@@ -142,16 +151,18 @@ Note: It will take several hours (> 6 hours) to complete the build
     Copy the `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` to tftp folder<br>
     <b>zcu102:</b> Copy the `zynqmp_fsbl.elf, pmufw.elf, u-boot.elf` to tftp folder<br>
 
--   <span style="color:green;font-size:12px">Systest#</span> `tftpd "<path to Image...>"`
--   <span style="color:green;font-size:12px">xsdb%</span> `device program BOOT.BIN`       <b>zcu102:</b> <span style="color:green;font-size:12px">xsdb%</span> `source boot.tcl`
--   <span style="color:green;font-size:12px">[Versal | ZynqMP]></span> `run wr_sdboot`
--   <span style="color:green;font-size:12px">Systest#</span> `power 0 power 1`
--   <span style="color:green;font-size:12px">Systest#</span> `bootmode "sd1_ls"`  <b>zcu102:</b> <span style="color:green;font-size:12px">xsdb%</span> `boot_sd`
--   <span style="color:green;font-size:12px">[Versal | ZynqMP]></span> `run bt_tftp`
--   Once petalinux is up, run the demo<br>    <span style="color:green;font-size:12px">root@xilinx-vck190-20222:~#</span> `sudo /usr/bin/power_demo.sh`
--   Check the power rail values from the System controller<br>    <span style="color:green;font-size:12px">Systest#</span> `readpower`
+-   `Linux~#` `cp {BOOT.BIN,system.dtb,Image,rootfs.cpio.gz.u-boot} <tftp folder>`
+-   `Linux~#` `cp {boot.tcl,zynqmp_fsbl.elf,pmufw.elf,u-boot.elf}   <tftp folder>`	
+-   `Systest#` `tftpd "<path to Image...>"`
+-   `xsdb%` `device program BOOT.BIN`       <b>zcu102:</b> xsdb%> `source boot.tcl`
+-   `[Versal | ZynqMP]>` `run wr_sdboot`
+-   `Systest#` `power 0 power 1`
+-   `Systest#` `bootmode "sd1_ls"`  <b>zcu102:</b>xsdb% `boot_sd`
+-   `[Versal | ZynqMP]>` `run bt_tftp`
+-   Once petalinux is up, run the demo<br>    `root@xilinx-vck190-20222:~#` `sudo /usr/bin/power_demo.sh`
+-   Check the power rail values from the System controller<br>    `Systest#` `readpower`
 
-## Measured power
+## 5. Measured power
 ---
  <font size="1"> 
 
@@ -169,7 +180,8 @@ Note: It will take several hours (> 6 hours) to complete the build
 |APU suspended with FPD OFF, RPU suspended, PL is OFF|	R5s suspended, FPD Off, DDR Self Refresh|	0|	0|	0.1146|	1.2376|	0.1022|	0.0856|	 1.5681|
 </font>
 
-## References
+## 6. References
+### Docker
 ##### Install and setup docker
 - curl -fsSL https://get.docker.com -o get-docker.sh
 - `sh get-docker.sh`
