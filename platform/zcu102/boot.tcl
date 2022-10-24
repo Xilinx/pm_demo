@@ -61,7 +61,7 @@ proc boot_qspi { } {
 targets -set -filter {name =~ "PSU" || name =~ "PS8"}
 mwr 0xffff0000 0x14000000;
 mask_write 0xFD1A0104 0x501 0x0
-exec sleep 2
+after 2000
 
 #Disable security gates for PMU debugger
 targets -set -filter {name =~ "PS8" || name =~ "PSU"}

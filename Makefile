@@ -138,7 +138,7 @@ endif
 	. $(PLNX_SETTINGS) && \
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
 	petalinux-build && \
-	cp -rfv images/linux/{bl31.elf,u-boot.elf,rootfs.cpio.gz.u-boot,Image}						../images && \
+	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}				../images && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv images/linux/plm.elf									../images/gen_files && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv images/linux/psmfw.elf								../images/static_files/psm_fw.elf && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv images/linux/system-default.dtb						../images/system.dtb && \

@@ -22,8 +22,7 @@ init:
 	exec cp ../../rpu_app/gic_setup.h rpu_app/src; \
 	exec cp ../../rpu_app/lscript.ld rpu_app/src; \
 	platform active $(TARGET_BOARD)_power1; \
-	platform generate; \
-	app build -name rpu_app"
+	platform generate; "
 
 
 .PHONY: app
