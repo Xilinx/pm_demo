@@ -263,7 +263,7 @@ else
         echo "APU: Powering on PL domain"
         # load partial pdi
         time fpgautil -R
-        time fpgautil -b partial.pdi -o partial.dtbo
+        time fpgautil -b partial.pdi
 fi
 echo "APU: *********************** APU, RPU and PL in high power ***************************"
 printf "APU: Delay ${DelayVal} seconds\n\n"
