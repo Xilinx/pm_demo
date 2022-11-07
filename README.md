@@ -70,7 +70,7 @@ Note: It will take several hours (> 6 hours) to build all components.<br>
     or
 - `make TARGET=[vck190|vmk180|zcu102]`
     or
-- `make hw_design TARGET=[vck190|vmk180|zcu102]`
+- `make hw_design TARGET=[vck190|vmk180]`
 - `make petalinux TARGET=[vck190|vmk180|zcu102]`
 - `make rpu_app TARGET=[vck190|vmk180|zcu102]`
 - `make boot_image TARGET=[vck190|vmk180|zcu102]`
@@ -182,10 +182,16 @@ Note: It will take several hours (> 6 hours) to build all components.<br>
 
 ## 6. References
 [versal-acap-trm]:	https://docs.xilinx.com/r/en-US/am011-versal-acap-trm/Introduction
-[zynqmp-trm]:			https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/Zynq-UltraScale-Device-Technical-Reference-Manual
+[zynqmp-trm]:		https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/Zynq-UltraScale-Device-Technical-Reference-Manual
+[vck190-eval-bd]:	https://docs.xilinx.com/r/en-US/ug1366-vck190-eval-bd
+[vmk180-eval-bd]:	https://docs.xilinx.com/r/en-US/ug1411-vmk180-eval-bd
+[zcu102-eval-bd]:	https://docs.xilinx.com/v/u/en-US/ug1182-zcu102-eval-bd
 1. [Versal ACAP Technical Reference Manual][versal-acap-trm]<br>
 2. [Zynq UltraScale+ Device Technical Reference Manual][zynqmp-trm]
-3. <b>Docker<b>
+3. [VCK190 Evaluation Board User Guide][vck190-eval-bd]
+4. [VMK180 Evaluation Board User Guide][vmk180-eval-bd]
+5. [ZCU102 Board User Guide][zcu102-eval-bd]
+6. <b>Docker<b>
     ##### Install and setup docker
     - curl -fsSL https://get.docker.com -o get-docker.sh
     - `sh get-docker.sh`
