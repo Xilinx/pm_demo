@@ -181,19 +181,23 @@ Note: It will take several hours (> 6 hours) to build all components.<br>
 </font>
 
 ## 6. References
-### Docker
-##### Install and setup docker
-- curl -fsSL https://get.docker.com -o get-docker.sh
-- `sh get-docker.sh`
-- `sudo groupadd docker`
-- `sudo usermod -aG docker ${USER}`  
-   <b>`Note:`</b> This might require logout and log back in 
-- `sudo systemctl start docker`
-- `sudo chmod 777 /var/run/docker.sock`<br>
-  <b>`Note:`</b> This may be needed if there is a permission denied error
+[versal-acap-trm]:	https://docs.xilinx.com/r/en-US/am011-versal-acap-trm/Introduction
+[zynqmp-trm]:			https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/Zynq-UltraScale-Device-Technical-Reference-Manual
+1. [Versal ACAP Technical Reference Manual][versal-acap-trm]<br>
+2. [Zynq UltraScale+ Device Technical Reference Manual][zynqmp-trm]
+3. <b>Docker<b>
+    ##### Install and setup docker
+    - curl -fsSL https://get.docker.com -o get-docker.sh
+    - `sh get-docker.sh`
+    - `sudo groupadd docker`
+    - `sudo usermod -aG docker ${USER}`  
+      <b>`Note:`</b> This might require logout and log back in 
+    - `sudo systemctl start docker`
+    - `sudo chmod 777 /var/run/docker.sock`<br>
+      <b>`Note:`</b> This may be needed if there is a permission denied error
 
-##### Helpful docker commands
-- Restart docker:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sudo systemctl restart docker`
-- List images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker images ls`
-- Stop docker containers: `docker stop $(docker ps -a -q)`
-- Delete all images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker system prune -a`
+    ##### Helpful docker commands
+    - Restart docker:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sudo systemctl restart docker`
+    - List images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker images ls`
+    - Stop docker containers: `docker stop $(docker ps -a -q)`
+    - Delete all images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker system prune -a`

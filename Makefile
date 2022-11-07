@@ -61,12 +61,40 @@ else
 	exit 1
 endif
 
+#### Help
+.PHONY: help
+help:
+	@echo 'Usage:'
+	@echo ''
+	@echo '  make'
+	@echo '    hw_design petalinux rpu_app boot_image'
+	@echo ''
+	@echo '  make hw_design [TARGET=vck190|vmk180]'
+	@echo '    Generate extensible xsa for platform generation'
+	@echo ''
+	@echo '  make petalinux [TARGET=vck190|vmk180|zcu102]'
+	@echo '    Build linux images'
+	@echo ''
+	@echo '  make rpu_app'
+	@echo '    Build rpu_app'
+	@echo ''
+	@echo '  make boot_image'
+	@echo '    Generate BOOT.BIN'
+	@echo ''
+	@echo '  Defaults:'
+	@echo '    RELEASE=$(RELEASE)'
+	@echo '    TARGET=$(TARGET)'
+	@echo '    PETALINUX_BSP=$(PLNX_BSP)'
+	@echo '    PETALINUX_SETTINGS=$(PLNX_SETTINGS)'
+	@echo '    VITIS_SETTINGS=$(VITS_SETTINGS)'
+	@echo ''
 
-# Build all
+
+#### Build all
 all: hw_design petalinux rpu_app boot_image
 .PHONY: all
 
-# Build hardware design (vck190 and vmk180)
+#### Build hardware design (vck190 or vmk180)
 .PHONY: hw_design
 hw_design:
 
@@ -108,7 +136,7 @@ endif
 	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o ../../images/greybox.pdi && \
 	cp -fv ../$(TARGET)_power1.runs/impl_1/$(TARGET)_power1_i_slot0_slot0_partial.pdi	../../images/partial.pdi
 
-# Build petalinux
+#### Build petalinux
 .PHONY: petalinux
 petalinux:
 	echo $(REL)
@@ -146,7 +174,7 @@ endif
 	$ [[ $(TARGET) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb}	../images
 
 
-# Build RPU application (uses XSA from above builds)
+#### Build RPU application (uses XSA from above builds)
 .PHONY: rpu_app
 rpu_app:
 	echo $(REL)
@@ -169,7 +197,7 @@ endif
 	cp -fv rpu_app/Debug/rpu_app.elf ../images
 
 
-# Build Boot Image
+#### Build Boot Image
 .PHONY: boot_image
 boot_image:
 	echo $(REL)
@@ -186,7 +214,7 @@ boot_image:
 	. $(PLNX_SETTINGS) && \
 	bootgen -arch $(PLATFORM) -image $(TARGET)_boot.bif -w -o BOOT.BIN
 
-# Build SD Card Image
+#### Build SD Card Image
 .PHONY: sd_image
 sd_image:
 	echo $(REL)
