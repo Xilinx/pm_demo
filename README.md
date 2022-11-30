@@ -65,7 +65,8 @@ Use make to build hardware design, petalinux (or ./xmake to use docker), rpu app
 and boot image for `TARGET=[vck190|vmk180|zcu102]`.
 The final artifacts in build/images<br>
 Note: It will take several hours (> 6 hours) to build all components.<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;Remove hwflow_xxx, rpu_app, xilinx-xxx for a clean build.
+      &emsp;Remove hwflow_xxx, rpu_app, xilinx-xxx for a clean build.
+- `make help`
 - `make`
     or
 - `make TARGET=[vck190|vmk180|zcu102]`
@@ -151,16 +152,16 @@ Note: It will take several hours (> 6 hours) to build all components.<br>
     Copy the `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` to tftp folder<br>
     <b>zcu102:</b> Copy the `zynqmp_fsbl.elf, pmufw.elf, u-boot.elf` to tftp folder<br>
 
--   `Linux~#` `cp {BOOT.BIN,system.dtb,Image,rootfs.cpio.gz.u-boot} <tftp folder>`
--   `Linux~#` `cp {boot.tcl,zynqmp_fsbl.elf,pmufw.elf,u-boot.elf}   <tftp folder>`	
--   `Systest#` `tftpd "<path to Image...>"`
--   `xsdb%` `device program BOOT.BIN`       <b>zcu102:</b> xsdb%> `source boot.tcl`
--   `[Versal | ZynqMP]>` `run wr_sdboot`
--   `Systest#` `power 0 power 1`
--   `Systest#` `bootmode "sd1_ls"`  <b>zcu102:</b>xsdb% `boot_sd`
--   `[Versal | ZynqMP]>` `run bt_tftp`
--   Once petalinux is up, run the demo<br>    `root@xilinx-vck190-20222:~#` `sudo /usr/bin/power_demo.sh`
--   Check the power rail values from the System controller<br>    `Systest#` `readpower`
+-   Host Linux~# `cp -v {BOOT.BIN,system.dtb,Image,rootfs.cpio.gz.u-boot} <tftp/xsdb folder>`
+-   Host Linux~# `cp -v {boot.tcl,zynqmp_fsbl.elf,pmufw.elf,u-boot.elf}   <tftp/xsdb folder>`	
+-   Systest# `tftpd "<path to Image...>"`
+-   xsdb% `device program BOOT.BIN`       <b>zcu102:</b> xsdb%> `source boot.tcl`
+-   [Versal | ZynqMP]> `run wr_sdboot`
+-   Systest# `power 0 power 1`
+-   Systest# `bootmode "sd1_ls"`  <b>zcu102:</b>xsdb% `boot_sd`
+-   [Versal | ZynqMP]> `run bt_tftp`
+-   Once petalinux is up, run the demo<br>    root@xilinx-vck190-20222:~# `sudo /usr/bin/power_demo.sh`
+-   Check the power rail values from the System controller<br>    Systest# `readpower`
 
 ## 5. Measured power
 ---
@@ -203,7 +204,7 @@ Note: It will take several hours (> 6 hours) to build all components.<br>
       <b>`Note:`</b> This may be needed if there is a permission denied error
 
     ##### Helpful docker commands
-    - Restart docker:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`sudo systemctl restart docker`
-    - List images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker images ls`
-    - Stop docker containers: `docker stop $(docker ps -a -q)`
-    - Delete all images:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;`docker system prune -a`
+    - Restart docker:&emsp;&emsp;&emsp;&emsp;`sudo systemctl restart docker`
+    - List images:&ensp;&emsp;&emsp;&emsp;&emsp;&emsp;`docker images ls`
+    - Stop docker containers:&nbsp;`docker stop $(docker ps -a -q)`
+    - Delete all images: &emsp;&emsp;&emsp;`docker system prune -a`

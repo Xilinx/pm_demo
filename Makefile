@@ -61,6 +61,11 @@ else
 	exit 1
 endif
 
+#### Build all
+all: hw_design petalinux rpu_app boot_image
+.PHONY: all
+
+
 #### Help
 .PHONY: help
 help:
@@ -90,10 +95,6 @@ help:
 	@echo ''
 
 
-#### Build all
-all: hw_design petalinux rpu_app boot_image
-.PHONY: all
-
 #### Build hardware design (vck190 or vmk180)
 .PHONY: hw_design
 hw_design:
@@ -119,6 +120,8 @@ endif
 	. $(VITS_SETTINGS) && \
 	vivado -mode batch -source main.tcl && \
 	cd outputs && \
+	cp -rfv gen_files		../../images/ && \
+	cp -rfv static_files		../../images/ && \
 	cp -fv $(TARGET)_power1.xsa	../../images && \
 	cdoutil -annotate -device $(DEVICE) -output-file $(BASE_PDI).rnpi.txt $(BASE_PDI).rnpi && \
 	sed -i -E 's/pm_init_node 0x18700000 0x1 0x4214004 0x4220006/pm_init_node 0x18700000 0x1 0x4214004/' $(BASE_PDI).rnpi.txt && \
@@ -157,6 +160,7 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	sed -i -E 's/.*CONFIG_auto-login.+/CONFIG_auto-login=y/' project-spec/configs/rootfs_config && \
 	$ [[ $(TARGET) != zcu102 ]] || sed -i -E 's/.*CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS.+/CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS=\"-DFSBL_A53_TCM_ECC_EXCLUDE_VAL=0\"/' project-spec/configs/config && \
 	petalinux-config --silentconfig && \
+	$ [[ $(TARGET) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ && \
 	petalinux-create -t apps --template install --name power-oob --enable && \
 	cp -fv ../../apu_app/power-oob.bb	project-spec/meta-user/recipes-apps/power-oob && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv ../images/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-oob/files && \
@@ -166,6 +170,8 @@ endif
 	. $(PLNX_SETTINGS) && \
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
 	petalinux-build && \
+	$ [[ $(TARGET) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/images/gen_files && \
+	$ [[ $(TARGET) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/images/static_files && \
 	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}				../images && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv images/linux/plm.elf									../images/gen_files && \
 	$ [[ $(TARGET) = zcu102 ]]  || cp -rfv images/linux/psmfw.elf								../images/static_files/psm_fw.elf && \
