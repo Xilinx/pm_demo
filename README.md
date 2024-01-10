@@ -1,4 +1,4 @@
-##### Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+##### Copyright (C) 2024, Advanced Micro Devices, Inc.  All rights reserved.
 ##### SPDX-License-Identifier: MIT
 # Versal Power Demo
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -53,11 +53,11 @@ following tools installed and follow the [build instructions](#2-build-instructi
 ### 2. Build Instructions
 ```
 Defaults:
- RELEASE=2023.2
+ RELEASE=2024.1
  BOARD=vck190
- PETALINUX_BSP=/proj/petalinux/2023.1/petalinux-v2023.1_daily_latest/bsp/release/xilinx-vck190-v2023.1-final.bsp
- PETALINUX_SETTINGS=/proj/petalinux/2023.1/petalinux-v2023.1_daily_latest/tool/petalinux-v2023.1-final/settings.sh
- VITIS_SETTINGS=/proj/xbuilds/2023.1_daily_latest/installs/lin64/Vitis/2023.1/settings64.sh
+ PETALINUX_BSP=/proj/petalinux/2024.1/petalinux-v2024.1_daily_latest/bsp/release/xilinx-vck190-v2024.1-final.bsp
+ PETALINUX_SETTINGS=/proj/petalinux/2024.1/petalinux-v2024.1_daily_latest/tool/petalinux-v2024.1-final/settings.sh
+ VITIS_SETTINGS=/proj/xbuilds/2024.1_daily_latest/installs/lin64/Vitis/2024.1/settings64.sh
  Note: Change Makefile variable RELEASE=202x.x to build for a different release version.
 ```
 Vitis and PetaLinux tools need to be installed before building any design.
