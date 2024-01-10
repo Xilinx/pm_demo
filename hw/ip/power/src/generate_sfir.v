@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+// SPDX-License-Identifier: MIT
+///////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns / 1ps
 
 module sfir_shifter #(
@@ -16,11 +21,11 @@ integer i;
 
 always @(posedge clk or posedge rst)
  begin
-  if (rst) 
+  if (rst)
    begin
      tmp[0] <= 0;
    end
-  else 
+  else
    begin
       tmp[0] <= datain;
       for (i=0; i<=2*nbtap-2; i=i+1)
@@ -153,7 +158,7 @@ generate
                                               );
    end
 endgenerate
-endmodule 
+endmodule
 
 
 module generate_sfir  #(
@@ -165,30 +170,30 @@ module generate_sfir  #(
    input clk,
    input rst
   );
-                       
+
   wire signed [2*dsize-1:0] firout [N-1:0];
   wire signed [N-1:0] fir;
   wire signed [dsize-1:0] datain;
   reg  signed [dsize-1:0] data = {dsize{1'b0}};
-       
+
   always @ (posedge clk or posedge rst)
    begin
      if (rst)
        begin
          data <= 0;
        end
-      else 
+      else
        begin
          data <= data+1;
-       end 
+       end
    end
-      
+
   assign datain = data;
-       
+
   generate
-           
-  for (genvar i = 0; i < N; i = i+1) 
-    begin           
+
+  for (genvar i = 0; i < N; i = i+1)
+    begin
      (* dont_touch = "yes" *) sfir_even_symmetric_systolic_top #(
         .nbtap(nbtap),
         .dsize (dsize),
@@ -201,6 +206,6 @@ module generate_sfir  #(
       );
      assign fir[i] = firout[i][8];
     end
-  endgenerate       
-          
+  endgenerate
+
 endmodule

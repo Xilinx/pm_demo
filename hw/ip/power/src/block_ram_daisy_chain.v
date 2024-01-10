@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+// SPDX-License-Identifier: MIT
+///////////////////////////////////////////////////////////////////////////////
+
 //`define SIM
 
 module block_ram_daisy_chain # (
@@ -17,7 +22,7 @@ wire 	[((NUM_RAMB+1)*DATAWIDTH)-1:0]	wr_data;
 wire 	[DATAWIDTH-1:0]			rd_data_init;
 `ifdef SIM
 reg 	[2:0] 				wr_addr, rd_addr;
-`else 
+`else
 reg 	[9:0] 				wr_addr, rd_addr;
 `endif
 reg 	[1:0] 				en_rd_cnt;
@@ -79,10 +84,10 @@ always @ (posedge clk)
     		if (mask_count <= toggle_rate)
     			rd_data <= ~rd_data;
     		else
-    			rd_data <= rd_data_init;   			
+    			rd_data <= rd_data_init;
     		end
     	end
-    	
+
     	//Mask enable rate
         always @ (posedge clk)
             begin
@@ -114,7 +119,7 @@ always @ (posedge clk)
 // Block Ram 36k
    genvar cnt;
    generate
-      for (cnt=1; cnt < NUM_RAMB+1; cnt=cnt+1) 
+      for (cnt=1; cnt < NUM_RAMB+1; cnt=cnt+1)
       begin: ram_gen
 	ramb_sp_daisy_chain #(.DATAWIDTH(DATAWIDTH)) uramb_sp_daisy_chain (
 		.clk(clk),
@@ -136,7 +141,7 @@ always @ (posedge clk)
 
 
 
-// VIO for control 
+// VIO for control
 
 wire [255:0] SYNC_IN; // IN BUS [255:0]
 wire [255:0] SYNC_OUT; // OUT BUS [255:0]
@@ -165,7 +170,7 @@ vio_bram u_vio_bram_dc (
 );
 end
 endgenerate
-	
+
 endmodule
 
 

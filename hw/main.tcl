@@ -1,9 +1,9 @@
 ###############################################################################
-# Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
-enable_beta_device *  
+enable_beta_device *
 
 create_project -name vck190_power1 -force -dir ../hwflow_vck190_power1 -part xcvc1902-vsva2197-2MP-e-S
 
@@ -24,7 +24,7 @@ set src_repo_path {./src}
 import_files -fileset constrs_1 $xdc_list
 
 
-set_property ip_repo_paths $ip_repo_path [current_project] 
+set_property ip_repo_paths $ip_repo_path [current_project]
 update_ip_catalog
 
 # Create block diagram design and set as current design
@@ -72,7 +72,7 @@ generate_target all [get_files ../$proj_dir/${proj_name}.srcs/sources_1/bd/$proj
 file mkdir ../$bd_tcl_dir
 
 
-set fd [open ../$bd_tcl_dir/README.hw w] 
+set fd [open ../$bd_tcl_dir/README.hw w]
 
 puts $fd "##########################################################################"
 puts $fd "This is a brief document containing design specific details for : ${board}"
@@ -81,11 +81,11 @@ puts $fd "######################################################################
 
 set board_part [get_board_parts [current_board_part -quiet]]
 if { $board_part != ""} {
-	puts $fd "BOARD: $board_part" 
+	puts $fd "BOARD: $board_part"
 }
 
 set design_name [get_property NAME [get_bd_designs]]
-puts $fd "BLOCK DESIGN: $design_name" 
+puts $fd "BLOCK DESIGN: $design_name"
 
 
 set columns {%40s%30s%15s%50s}
@@ -94,19 +94,24 @@ puts $fd [format $columns "MODULE INSTANCE NAME" "IP TYPE" "IP VERSION" "IP"]
 puts $fd [string repeat - 150]
 
 foreach ip [get_ips] {
-	set catlg_ip [get_ipdefs -all [get_property IPDEF $ip]]	
+	set catlg_ip [get_ipdefs -all [get_property IPDEF $ip]]
 	puts $fd [format $columns [get_property NAME $ip] [get_property NAME $catlg_ip] [get_property VERSION $catlg_ip] [get_property VLNV $catlg_ip]]
 }
 
 close $fd
 
+#######################DFX Configuration#####################################
+create_pr_configuration -name config_full -partitions [list vck190_power1_i/slot0:slot0_inst_0 ]
+create_pr_configuration -name config_gb -partitions { }  -greyboxes [list vck190_power1_i/slot0 ]
+create_run impl_full -parent_run synth_1 -flow {Vivado Implementation 2023} -pr_config config_full -dfx_mode STANDARD
+set_property PR_CONFIGURATION config_full [get_runs impl_full]
+create_run impl_gb -parent_run impl_full -flow {Vivado Implementation 2023} -pr_config config_gb
+#############################################################################
 
 set_property synth_checkpoint_mode Hierarchical [get_files ../$proj_dir/${proj_name}.srcs/sources_1/bd/$proj_name/${proj_name}.bd]
 launch_runs synth_1 -jobs 12
 wait_on_run synth_1
 
-create_pr_configuration -name config_full -partitions [list ${proj_name}_i/slot0:slot0 ]
-set_property PR_CONFIGURATION config_full [get_runs impl_1]
 
 launch_runs impl_1 -to_step write_device_image -jobs 12
 

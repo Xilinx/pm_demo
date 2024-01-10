@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 #include "pm_init.h"
@@ -8,7 +8,11 @@
 #include "ipi.h"
 #include "rtc.h"
 
+
 extern u32 CountsPerSec;
+
+#define MIN(a,b)		(((a) < (b)) ? (a) : (b))
+#define MAX(a,b)		(((a) > (b)) ? (a) : (b))
 
 #if defined(versal)
 #define RESUME_ADDR					(0xFFE00000U)
@@ -19,8 +23,8 @@ extern u32 CountsPerSec;
 #define NODE_IN_FPD					PM_DEV_SWDT_FPD
 #define RTC_DEVICE					PM_DEV_RTC
 #define SUSPEND_TYPE				PM_SUSPEND_STATE_SUSPEND_TO_RAM
-#define BLOCKING_ACK				0
-#define NON_BLOCKING_ACK			0
+#define BLOCKING_ACK				0U
+#define NON_BLOCKING_ACK			0U
 #define FPD_NODE					PM_POWER_FPD
 #define PL_NODE						PM_POWER_PLD
 #else
@@ -32,7 +36,7 @@ extern void __attribute__((weak)) * _vector_table;
 #define LATENCY_VAL					MAX_LATENCY
 #define NODE_IN_FPD					NODE_SATA
 #define RTC_DEVICE 					NODE_RTC
-#define SUSPEND_TYPE				0
+#define SUSPEND_TYPE				0U
 #define BLOCKING_ACK				REQUEST_ACK_BLOCKING
 #define NON_BLOCKING_ACK			REQUEST_ACK_NON_BLOCKING
 #define FPD_NODE					NODE_FPD
@@ -40,6 +44,7 @@ extern void __attribute__((weak)) * _vector_table;
 #endif
 
 #define DELAY_COUNT(x)				((x) * (u64)XPAR_CPU_CORTEXR5_0_CPU_CLK_FREQ_HZ / 10)
+
 /* Calculate latency from counter ticks to microseconds */
 #define CALCULATE_LATENCY(x)		((x) / (CountsPerSec / 1000000))
 
@@ -57,12 +62,12 @@ extern void __attribute__((weak)) * _vector_table;
 #define SYNC_PL_DOWN				(0x00000011U)
 #define SYNC_PL_UP					(0x00000012U)
 
-#define PRINT_RPU_ON_APU_ON			xil_printf("RPU: ******************************** RPU ON, APU ON *********************************\r\n")
-#define PRINT_RPU_ON_APU_SUSPEND	xil_printf("RPU: *********************** RPU ON, APU suspended with FPD ON ***********************\r\n")
-#define PRINT_RPU_IDLE_APU_SUSPEND	xil_printf("RPU: ********************** RPU Idle, APU suspended with FPD ON **********************\r\n")
-#define PRINT_RPU_ON_FPD_OFF		xil_printf("RPU: *********************** RPU ON, APU suspended with FPD OFF **********************\r\n")
-#define PRINT_RPU_IDLE_FPD_OFF		xil_printf("RPU: ********************** RPU Idle, APU suspended with FPD OFF *********************\r\n")
-#define PRINT_RPU_SUSPENDED_FPD_OFF	xil_printf("RPU: ******************* RPU Suspended, APU suspended with FPD OFF *******************\r\n")
+#define PRINT_RPU_ON_APU_ON			xil_printf("\nRPU: ************************* RPU ON, APU ON **************************\r\n")
+#define PRINT_RPU_ON_APU_SUSPEND	xil_printf("\nRPU: **************** RPU ON, APU suspended with FPD ON ****************\r\n")
+#define PRINT_RPU_IDLE_APU_SUSPEND	xil_printf("\nRPU: *************** RPU Idle, APU suspended with FPD ON ***************\r\n")
+#define PRINT_RPU_ON_FPD_OFF		xil_printf("\nRPU: **************** RPU ON, APU suspended with FPD OFF ***************\r\n")
+#define PRINT_RPU_IDLE_FPD_OFF		xil_printf("\nRPU: *************** RPU Idle, APU suspended with FPD OFF **************\r\n")
+#define PRINT_RPU_SUSPENDED_FPD_OFF	xil_printf("\nRPU: ************ RPU Suspended, APU suspended with FPD OFF ************\r\n")
 
 static XIpiPsu IpiInst;
 static XRtcPsu RtcInstPtr;
@@ -72,24 +77,34 @@ u64 tNotify;
 u32 DelayVal;
 u32 IterationCnt;
 
-static void Notify_CallBack(XPm_Notifier *const notifier)
+/**
+ * NotifyCallBack() - Notify callback routines
+ *
+ * @notifier Pointer to the Notifier data structure
+ */
+static void NotifyCallBack(XPm_Notifier *const notifier)
 {
 	tNotify = ReadTime();
 }
 
 static XPm_Notifier notifier = {
-	.callback = Notify_CallBack,
-	.node = FPD_NODE,
-	.event = EVENT_STATE_CHANGE,
-	.flags = 0,
+	.callback = NotifyCallBack,
+	.node     = FPD_NODE,
+	.event    = EVENT_STATE_CHANGE,
+	.flags    = 0U,
 };
 
-static int InitApp(void)
+/**
+ * InitApp() - Init app
+ *
+ * @None
+ */
+static XStatus InitApp(void)
 {
-	int Status;
+	XStatus Status;
 
 	Status = PmInit(&GicInst, &IpiInst);
-	if (Status != XST_SUCCESS) {
+	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in PmInit\r\n");
 		goto done;
 	}
@@ -104,33 +119,48 @@ done:
 	return Status;
 }
 
+/**
+ * Wait() - Wait
+ *
+ * @Seconds
+ */
 static void Wait(u32 Seconds)
 {
 	u64 WaitCount;
 
 	xil_printf("RPU: (%d seconds delay)\r\n", Seconds);
 	WaitCount = DELAY_COUNT(Seconds);
-	for (; WaitCount > 0; WaitCount--);
+	for (; 0U < WaitCount; WaitCount--) {
+		;
+	}
 }
 
-static int request_suspend(u32 *latency, u32 *fpd_latency)
+/**
+ * RequestSuspend() - Request for suspend
+ *
+ * @latency Pointer to latency
+ * @fpd_latency Pointer to FPD latency
+*/
+static XStatus RequestSuspend(u32 *latency, u32 *fpd_latency)
 {
 	u64 tStart, tEnd;
-	int Status;
+	XStatus Status;
 
-	notifier.received = 0;
+	notifier.received = 0U;
 
 #if defined(versal)
 	(void)latency;
 	SyncSetMask(SYNC_RPU_MASK, SYNC_RPU_SIGNAL_APU_SUSPEND);
 	tStart = ReadTime();
-	while(0 != GetAPU1PwrStatus() || 0 != GetAPU0PwrStatus());
+	while(0U != GetApu1PwrStatus() || 0U != GetApu0PwrStatus()) {
+		;
+	}
 	tEnd = ReadTime();
 	Status = XST_SUCCESS;
 #else
 	tStart = ReadTime();
-	Status = XPm_RequestSuspend(SUSPEND_TARGET, NON_BLOCKING_ACK, LATENCY_VAL, 0);
-	tEnd = ReadTime();
+	Status = XPm_RequestSuspend(SUSPEND_TARGET, NON_BLOCKING_ACK, LATENCY_VAL, 0U);
+	tEnd   = ReadTime();
 	IpiWaitForAck();
 #endif
 
@@ -152,8 +182,10 @@ static int request_suspend(u32 *latency, u32 *fpd_latency)
 	}
 
 	/* Block until the notification is received */
-	while (0 == notifier.received);
-	notifier.received = 0;
+	while (0U == notifier.received) {
+		;
+	}
+	notifier.received = 0U;
 	PRINT_RPU_ON_FPD_OFF;
 	*fpd_latency = CALCULATE_LATENCY(tNotify - tStart);
 
@@ -161,32 +193,41 @@ done:
 	return Status;
 }
 
-static int request_wakeup(u32 *latency, u32 *pu0_latency, u32 *fpd_latency)
+/**
+ * request_wakeup() - Request for wakeup
+ *
+ * @latency Pointer to latency
+ * @pu0_latency Pointer to pu0 latency
+ * @fpd_latency Pointer to FPD latency
+ */
+static XStatus request_wakeup(u32 *latency, u32 *pu0_latency, u32 *fpd_latency)
 {
 	u64 tStart, tEnd, tpu0_up;
-	int Status;
+	XStatus Status;
 
-	notifier.received = 0;
+	notifier.received = 0U;
 
 #if defined(versal)
 	(void)fpd_latency;
 #else
 	tStart = ReadTime();
-	Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+	Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_IN_FPD);
 		goto done;
 	}
 
 	/* Block until the notification is received */
-	while (0 == notifier.received);
+	while (0U == notifier.received) {
+		;
+	}
 	*fpd_latency = CALCULATE_LATENCY(tNotify - tStart);
 
 	PRINT_RPU_ON_APU_SUSPEND;
 #endif
 
 	tStart = ReadTime();
-	Status = XPm_RequestWakeUp(WAKEUP_TARGET, 0, 0, BLOCKING_ACK);
+	Status = XPm_RequestWakeUp(WAKEUP_TARGET, 0U, 0U, BLOCKING_ACK);
 	tpu0_up = ReadTime();
 	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in RequestWakeup of 0x%x\r\n", Status, WAKEUP_TARGET);
@@ -194,7 +235,7 @@ static int request_wakeup(u32 *latency, u32 *pu0_latency, u32 *fpd_latency)
 	}
 
 #if defined(versal)
-	Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+	Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_IN_FPD);
 		goto done;
@@ -210,47 +251,53 @@ static int request_wakeup(u32 *latency, u32 *pu0_latency, u32 *fpd_latency)
 	PRINT_RPU_ON_APU_ON;
 
 	*pu0_latency = CALCULATE_LATENCY(tpu0_up - tStart);
-	*latency = CALCULATE_LATENCY(tEnd - tStart);
+	*latency     = CALCULATE_LATENCY(tEnd - tStart);
 
 done:
 	return Status;
 }
 
-static int measure_latency(void)
+/**
+ * MeasureLatency() - Measure latency
+ *
+ * @None
+ */
+static XStatus MeasureLatency(void)
 {
 	u32 iteration, latency, pu0_latency, fpd_latency;
-	u32 susp_min = ~0, susp_max = 0, susp_avg = 0;
-	u32 fpd_off_min = ~0, fpd_off_max = 0, fpd_off_avg = 0;
-	u32 wake_min = ~0, wake_max = 0, wake_avg = 0;
-	u32 pu0_wake_min = ~0, pu0_wake_max = 0, pu0_wake_avg = 0;
+	u32 susp_min = ~0U, susp_max = 0U, susp_avg = 0U;
+	u32 fpd_off_min = ~0U, fpd_off_max = 0U, fpd_off_avg = 0U;
+	u32 wake_min = ~0U, wake_max = 0U, wake_avg = 0U;
+	u32 pu0_wake_min = ~0U, pu0_wake_max = 0U, pu0_wake_avg = 0U;
 
 #if !defined(versal)
-	u32 fpd_on_min = ~0, fpd_on_max = 0, fpd_on_avg = 0;
+	u32 fpd_on_min = ~0U, fpd_on_max = 0U, fpd_on_avg = 0U;
+	u64 fpd_on_total = 0U;
 #endif
 
-	u64 susp_total = 0, wake_total = 0, pu0_wake_total = 0;
-	u64 fpd_on_total = 0, fpd_off_total = 0;
-	int Status;
+	u64 susp_total = 0U, wake_total = 0U, pu0_wake_total = 0U;
+	u64 fpd_off_total = 0U;
+	XStatus Status;
 
 	xil_printf("RPU: Latency Measurement Start. Total iteration is %d\r\n", IterationCnt);
-	for (iteration = 0; iteration < IterationCnt; iteration++) {
+	for (iteration = 0U; iteration < IterationCnt; iteration++) {
 
-		xil_printf("RPU: Latency measurement iteration count : %d\r\n", iteration + 1);
+		xil_printf("RPU: Latency measurement iteration count : %d\r\n", iteration + 1U);
 
 		PRINT_RPU_ON_APU_ON;
 
 		/* Measure suspend latency */
-		Status = request_suspend(&latency, &fpd_latency);
+		Status = RequestSuspend(&latency, &fpd_latency);
 		if (XST_SUCCESS != Status) {
 			goto done;
 		}
 
-		susp_min = (latency < susp_min) ? latency : susp_min;
-		susp_max = (latency > susp_max) ? latency : susp_max;
+		susp_min = MIN(latency, susp_min);
+		susp_max = MAX(latency, susp_max);
 		susp_total += latency;
 
-		fpd_off_min = (fpd_latency < fpd_off_min) ? fpd_latency : fpd_off_min;
-		fpd_off_max = (fpd_latency > fpd_off_max) ? fpd_latency : fpd_off_max;
+		fpd_off_min = MIN(fpd_latency, fpd_off_min);
+		fpd_off_max = MAX(fpd_latency, fpd_off_max);
 		fpd_off_total += fpd_latency;
 
 		Wait(3U);
@@ -261,25 +308,25 @@ static int measure_latency(void)
 			goto done;
 		}
 
-		wake_min = (latency < wake_min) ? latency : wake_min;
-		wake_max = (latency > wake_max) ? latency : wake_max;
+		wake_min = MIN(latency, wake_min);
+		wake_max = MAX(latency, wake_max);
 		wake_total += latency;
 
-		pu0_wake_min = (pu0_latency < pu0_wake_min) ? pu0_latency : pu0_wake_min;
-		pu0_wake_max = (pu0_latency > pu0_wake_max) ? pu0_latency : pu0_wake_max;
+		pu0_wake_min = MIN(pu0_latency, pu0_wake_min);
+		pu0_wake_max = MAX(pu0_latency, pu0_wake_max);
 		pu0_wake_total += pu0_latency;
 
 #if !defined(versal)
-		fpd_on_min = (fpd_latency < fpd_on_min) ? fpd_latency : fpd_on_min;
-		fpd_on_max = (fpd_latency > fpd_on_max) ? fpd_latency : fpd_on_max;
+		fpd_on_min = MIN(fpd_latency, fpd_on_min);
+		fpd_on_max = MAX(fpd_latency, fpd_on_max);
 		fpd_on_total += fpd_latency;
 #endif
 		Wait(3U);
 	}
 
-	susp_avg = susp_total / IterationCnt;
-	wake_avg = wake_total / IterationCnt;
-	fpd_off_avg = fpd_off_total / IterationCnt;
+	susp_avg     = susp_total / IterationCnt;
+	wake_avg     = wake_total / IterationCnt;
+	fpd_off_avg  = fpd_off_total / IterationCnt;
 	pu0_wake_avg = pu0_wake_total / IterationCnt;
 
 #if !defined(versal)
@@ -306,11 +353,16 @@ done:
 	return Status;
 }
 
-static int prepare_suspend(void)
+/**
+ * prepare_suspend() - Prepare for suspend
+ *
+ * @None
+ */
+static XStatus prepare_suspend(void)
 {
 	XStatus Status;
 
-	Status = XPm_SetWakeUpSource(SELF_DEV_ID, RTC_DEVICE, 1);
+	Status = XPm_SetWakeUpSource(SELF_DEV_ID, RTC_DEVICE, 1U);
 	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in SetWakeUpSource of RTC\r\n", Status);
 		goto done;
@@ -342,16 +394,16 @@ static int prepare_suspend(void)
 	};
 	u32 Idx;
 
-	for (Idx = 0; Idx < PM_ARRAY_SIZE(SramMemList); Idx++) {
-		Status = XPm_SetRequirement(SramMemList[Idx], PM_CAP_CONTEXT, 0, REQUEST_ACK_NO);
+	for (Idx = 0U; Idx < PM_ARRAY_SIZE(SramMemList); Idx++) {
+		Status = XPm_SetRequirement(SramMemList[Idx], PM_CAP_CONTEXT, 0U, REQUEST_ACK_NO);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in SetRequirement of 0x%x\r\n", Status, SramMemList[Idx]);
 			goto done;
 		}
 	}
 
-	for (Idx = 0; Idx < PM_ARRAY_SIZE(OtherDevList); Idx++) {
-		Status = XPm_SetRequirement(OtherDevList[Idx], 0, 0, REQUEST_ACK_NO);
+	for (Idx = 0U; Idx < PM_ARRAY_SIZE(OtherDevList); Idx++) {
+		Status = XPm_SetRequirement(OtherDevList[Idx], 0U, 0U, REQUEST_ACK_NO);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in SetRequirement of 0x%x\r\n", Status, OtherDevList[Idx]);
 			goto done;
@@ -363,11 +415,14 @@ done:
 	return Status;
 }
 
-int main()
+/**
+ * @main() -
+ */
+int main(void)
 {
 	enum XPmBootStatus BootStatus;
-	int Status = XST_FAILURE;
-	u32 ApuSyncValue = 0;
+	XStatus Status = XST_FAILURE;
+	u32 ApuSyncValue = 0U;
 
 #if !defined(versal)
 	u64 tStart, tEnd;
@@ -377,7 +432,7 @@ int main()
 	BootStatus = XPm_GetBootStatus();
 	if (PM_INITIAL_BOOT == BootStatus) {
 		/* Add delay to avoid print mix-up */
-		Wait(3);
+		Wait(3U);
 		xil_printf("RPU: INITIAL BOOT\r\n");
 
 		Status = InitApp();
@@ -386,14 +441,14 @@ int main()
 			goto done;
 		}
 
-		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_IN_FPD);
 			goto done;
 		}
 
 #if !defined(versal)
-		Status = XPm_RequestNode(NODE_UART_0, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+		Status = XPm_RequestNode(NODE_UART_0, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_UART_0);
 			goto done;
@@ -407,7 +462,7 @@ int main()
 		}
 	} else if (PM_RESUME == BootStatus) {
 #if !defined(versal)
-		Status = XPm_RequestNode(NODE_UART_0, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+		Status = XPm_RequestNode(NODE_UART_0, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_UART_0);
 			goto done;
@@ -427,7 +482,7 @@ int main()
 		Wait(DelayVal);
 
 #if !defined(versal)
-		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_IN_FPD);
 			goto done;
@@ -440,14 +495,14 @@ int main()
 		SetRtcAlarm(&RtcInstPtr, DelayVal);
 		__asm__("wfi");
 
-		Status = XPm_RequestWakeUp(WAKEUP_TARGET, 0, 0, BLOCKING_ACK);
+		Status = XPm_RequestWakeUp(WAKEUP_TARGET, 0U, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestWakeup of 0x%x\r\n", Status, WAKEUP_TARGET);
 			goto done;
 		}
 
 #if defined(versal)
-		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0, BLOCKING_ACK);
+		Status = XPm_RequestNode(NODE_IN_FPD, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, NODE_IN_FPD);
 			goto done;
@@ -465,18 +520,18 @@ int main()
 
 			/* Wait till target application is ready */
 			SyncSetMask(SYNC_RPU_MASK, SYNC_RPU_SIGNAL);
-			Wait(1);
+			Wait(1U);
 			ApuSyncValue = SyncGetValue(SYNC_APU_MASK);
 			SyncClearReady(SYNC_APU_MASK);
-		} while (ApuSyncValue != SYNC_APU_FINISH);
+		} while (SYNC_APU_FINISH != ApuSyncValue);
 
 #if !defined(versal)
 		SyncWaitForReady(SYNC_PL_UP);
 		SyncClearReady(SYNC_PL_UP);
 		xil_printf("RPU: Powering up PL\r\n");
 		tStart = ReadTime();
-		Status = XPm_RequestNode(NODE_PL, PM_CAP_ACCESS, 0, BLOCKING_ACK);
-		tEnd = ReadTime();
+		Status = XPm_RequestNode(NODE_PL, PM_CAP_ACCESS, 0U, BLOCKING_ACK);
+		tEnd   = ReadTime();
 		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in RequestNode of 0x%x\r\n", Status, PL_NODE);
 			goto done;
@@ -497,7 +552,7 @@ int main()
 	xil_printf("RPU: Powering down PL\r\n");
 	tStart = ReadTime();
 	Status = XPm_ForcePowerDown(PL_NODE, BLOCKING_ACK);
-	tEnd = ReadTime();
+	tEnd   = ReadTime();
 	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in ForcePowerDown of 0x%x\r\n", Status, PL_NODE);
 		goto done;
@@ -511,14 +566,14 @@ int main()
 
 	/* Get delay value between 2 power modes */
 	DelayVal = SyncGetValue(SYNC_DELAY_VAL_MASK) >> SYNC_DELAY_VAL_SHIFT;
-	if (DelayVal < 10U) {
+	if (10U > DelayVal) {
 		DelayVal = 10U;
 	}
 	xil_printf("RPU: DelayVal = %d\r\n", DelayVal);
 
 	/* Get number of iterations for latency measurement */
 	IterationCnt = SyncGetValue(SYNC_ITERATION_CNT_MASK) >> SYNC_ITERATION_CNT_SHIFT;
-	if (IterationCnt > 5U) {
+	if (5U < IterationCnt) {
 		IterationCnt = 5U;
 	}
 
@@ -528,16 +583,16 @@ int main()
 
 		/* Wait till target application is ready */
 		SyncSetMask(SYNC_RPU_MASK, SYNC_RPU_SIGNAL);
-		Wait(1);
+		Wait(1U);
 		ApuSyncValue = SyncGetValue(SYNC_APU_MASK);
 		SyncClearReady(SYNC_APU_MASK);
-	} while (ApuSyncValue != SYNC_APU_FINISH);
+	} while (SYNC_APU_FINISH != ApuSyncValue);
 
-	if (IterationCnt > 0U) {
+	if (0U < IterationCnt) {
 		xil_printf("RPU: IterationCnt = %d\r\n", IterationCnt);
 
-		Status = measure_latency();
-		if (Status != XST_SUCCESS) {
+		Status = MeasureLatency();
+		if (XST_SUCCESS != Status) {
 			xil_printf("RPU: Error 0x%x in Latency measurement of APU\r\n", Status);
 			goto done;
 		}
@@ -547,10 +602,12 @@ int main()
 
 #if defined(versal)
 	SyncSetMask(SYNC_RPU_MASK, SYNC_RPU_SIGNAL_APU_SUSPEND);
-	while(0 != GetAPU1PwrStatus() || 0 != GetAPU0PwrStatus());
+	while(0U != GetApu1PwrStatus() || 0U != GetApu0PwrStatus()) {
+		;
+	}
 	Status = XST_SUCCESS;
 #else
-	Status = XPm_RequestSuspend(SUSPEND_TARGET, NON_BLOCKING_ACK, LATENCY_VAL, 0);
+	Status = XPm_RequestSuspend(SUSPEND_TARGET, NON_BLOCKING_ACK, LATENCY_VAL, 0U);
 	IpiWaitForAck();
 #endif
 
@@ -558,13 +615,13 @@ int main()
 		xil_printf("RPU: Error 0x%x in RequestSuspend of 0x%x\r\n", Status, SUSPEND_TARGET);
 		goto done;
 	}
-	Wait(3);
+	Wait(3U);
 	PRINT_RPU_IDLE_APU_SUSPEND;
 	SetRtcAlarm(&RtcInstPtr, DelayVal);
 	__asm__("wfi");
 
 	Status = XPm_ReleaseNode(NODE_IN_FPD);
-	if (Status != XST_SUCCESS) {
+	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in ReleaseNode of 0x%x\r\n", Status, NODE_IN_FPD);
 		goto done;
 	}
@@ -582,7 +639,7 @@ int main()
 
 #if !defined(versal)
 	Status = XPm_ReleaseNode(NODE_UART_0);
-	if (Status != XST_SUCCESS) {
+	if (XST_SUCCESS != Status) {
 		xil_printf("RPU: Error 0x%x in ReleaseNode of NODE_UART_0\r\n", Status);
 		goto done;
 	}
@@ -592,3 +649,4 @@ int main()
 done:
 	return Status;
 }
+

@@ -1,3 +1,8 @@
+###############################################################################
+# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# SPDX-License-Identifier: MIT
+###############################################################################
+
 set_property PACKAGE_PIN AW27 [get_ports clk_p]
 set_property IOSTANDARD LVDS15 [get_ports clk_p]
 set_property PACKAGE_PIN AY27 [get_ports clk_n]
@@ -8,17 +13,12 @@ add_cells_to_pblock [get_pblocks pblock_slot0] [get_cells -quiet [list vck190_po
 resize_pblock [get_pblocks pblock_slot0] -add {SLICE_X60Y0:SLICE_X359Y327}
 resize_pblock [get_pblocks pblock_slot0] -add {BUFGCE_X3Y0:BUFGCE_X11Y23}
 resize_pblock [get_pblocks pblock_slot0] -add {BUFGCTRL_X3Y0:BUFGCTRL_X11Y7}
-resize_pblock [get_pblocks pblock_slot0] -add {BUFG_FABRIC_X0Y95:BUFG_FABRIC_X4Y0}
 resize_pblock [get_pblocks pblock_slot0] -add {DSP58_CPLX_X0Y0:DSP58_CPLX_X5Y163}
 resize_pblock [get_pblocks pblock_slot0] -add {DSP_X0Y0:DSP_X11Y163}
-resize_pblock [get_pblocks pblock_slot0] -add {IOB_X28Y0:IOB_X104Y2}
 resize_pblock [get_pblocks pblock_slot0] -add {MMCM_X3Y0:MMCM_X11Y0}
 resize_pblock [get_pblocks pblock_slot0] -add {RAMB18_X2Y0:RAMB18_X11Y165}
 resize_pblock [get_pblocks pblock_slot0] -add {RAMB36_X2Y0:RAMB36_X11Y82}
-resize_pblock [get_pblocks pblock_slot0] -add {SLICE_X0Y191:SLICE_X69Y327}
-resize_pblock [get_pblocks pblock_slot0] -add {IOB_X14Y3:IOB_X14Y13}
-resize_pblock [get_pblocks pblock_slot0] -add {RAMB18_X0Y98:RAMB18_X1Y167}
-resize_pblock [get_pblocks pblock_slot0] -add {RAMB36_X0Y49:RAMB36_X1Y83}
+resize_pblock pblock_slot0 -add {SLICE_X60Y0:SLICE_X359Y327 BLI_X1024Y0:BLI_X6463Y1 BLI_TMR_X32Y0:BLI_TMR_X201Y1 BUFGCE_X3Y0:BUFGCE_X10Y23 BUFGCE_DIV_X3Y0:BUFGCE_DIV_X10Y3 BUFGCE_HDIO_X1Y0:BUFGCE_HDIO_X1Y3 BUFGCTRL_X3Y0:BUFGCTRL_X10Y7 BUFG_FABRIC_X0Y0:BUFG_FABRIC_X4Y95 BUFG_PS_X0Y0:BUFG_PS_X0Y11 DDRMC_X1Y0:DDRMC_X3Y0 DDRMC_RIU_X2Y0:DDRMC_RIU_X3Y0 DPLL_X5Y0:DPLL_X13Y7 DSP58_CPLX_X0Y0:DSP58_CPLX_X5Y163 DSP_X0Y0:DSP_X11Y163 GCLK_DELAY_X1Y0:GCLK_DELAY_X5Y191 GCLK_PD_X2Y0:GCLK_PD_X13Y287 GCLK_TAPS_DECODE_VNOC_X0Y0:GCLK_TAPS_DECODE_VNOC_X3Y3 GCLK_TAPS_DECODE_VNOC_PS_X0Y0:GCLK_TAPS_DECODE_VNOC_PS_X0Y0 HDIOLOGIC_X1Y0:HDIOLOGIC_X1Y10 HDIO_BIAS_X1Y0:HDIO_BIAS_X1Y0 HDLOGIC_APB_X1Y0:HDLOGIC_APB_X1Y0 IOB_X28Y0:IOB_X100Y13 IRI_QUAD_X38Y0:IRI_QUAD_X223Y1367 MMCM_X3Y0:MMCM_X10Y0 MRMAC_X0Y0:MRMAC_X0Y3 NOC_NMU512_X0Y0:NOC_NMU512_X3Y6 NOC_NSU512_X0Y0:NOC_NSU512_X3Y6 PCIE40_X1Y0:PCIE40_X1Y2 RAMB18_X2Y0:RAMB18_X11Y167 RAMB36_X2Y0:RAMB36_X11Y83 RPI_HD_APB_X1Y0:RPI_HD_APB_X1Y0 URAM288_X2Y0:URAM288_X5Y83 URAM_CAS_DLY_X2Y0:URAM_CAS_DLY_X5Y3 XPHY_X27Y0:XPHY_X98Y0 XPIOLOGIC_X27Y0:XPIOLOGIC_X98Y2 XPIO_VREF_X27Y0:XPIO_VREF_X98Y0 XPLL_X6Y0:XPLL_X21Y0} -remove {SLICE_X60Y0:SLICE_X359Y327 DSP58_CPLX_X0Y0:DSP58_CPLX_X5Y163 DSP_X0Y0:DSP_X11Y163 RAMB18_X2Y0:RAMB18_X11Y165 RAMB36_X2Y0:RAMB36_X11Y82} -locs keep_all
 set_property SNAPPING_MODE ON [get_pblocks pblock_slot0]
 
 set_property CLOCK_DEDICATED_ROUTE ANY_CMT_REGION [get_nets vck190_power1_i/slot0/CLK_WIZ_EVE_1/inst/clock_primitive_inst/clk_out1]

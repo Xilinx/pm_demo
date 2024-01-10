@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 new_bif:
@@ -22,7 +22,7 @@ new_bif:
    id = 0x09
    type = pmcdata, load = 0xf2000000
    file = gen_files/pmc_data.cdo
-   file = vck_vmk_board_topology.cdo
+   file = vck190_board_topology.cdo
   }
  }
  image
@@ -56,7 +56,7 @@ new_bif:
   {
    id = 0x05
    type = cdo
-   file = vck190_base_wrapper_out.rnpi.txt
+   file = vck190_base_wrapper_out.rnpi
   }
  }
  image
