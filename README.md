@@ -1,4 +1,4 @@
-##### Copyright (C) 2024, Advanced Micro Devices, Inc.  All rights reserved.
+##### Copyright (C) 2023 - 2024, Advanced Micro Devices, Inc.  All rights reserved.
 ##### SPDX-License-Identifier: MIT
 # Versal Power Demo
 [![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
@@ -132,7 +132,7 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 │   ├─ pm_init.h
 │   ├─ rtc.c
 │   └─ rtc.h
-├─ platform
+├─ boards
 │   ├─ vck190
 │   |   ├─ vck190_board_topology.cdo
 │   │   └─ vck190_boot.bif - BOOT.BIN, boot information file

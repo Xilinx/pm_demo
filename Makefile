@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2024, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
@@ -8,12 +8,13 @@ RELEASE = 2024.1
 
 
 # Device, Targets, Dirs, XSA...
-BOARD    = vck190
+BOARD     = vck190
 DEVICE    = xcvc1902
 PLATFORM  = versal
 BUILD_DIR = build
+IMAGE_DIR = images.$(BOARD)
 HW_PREFIX = xilinx-$(BOARD)
-HW_XSA    = ../images/$(BOARD)_power1.xsa
+HW_XSA    = ../images.$(BOARD)/$(BOARD)_power1.xsa
 
 # Set paths from environment variables
 PLNX_BSP      = $(PETALINUX_BSP)
@@ -43,7 +44,7 @@ endif
 REL = $(shell expr $(PLNX_SETTINGS) | grep -Eo '([0-9]+)(\.?[0-9]+)*' | head -1)
 
 
-# Set platform, device 
+# Set board, device 
 ifeq ($(BOARD),vck190)
 	DEVICE = xcvc1902
 	ifeq ($(shell expr $(REL) \<= 2022.1), 1)
@@ -75,7 +76,7 @@ help:
 	@echo '    hw_design petalinux rpu_app boot_image'
 	@echo ''
 	@echo '  make hw_design [BOARD=vck190|vmk180]'
-	@echo '    Generate extensible xsa for platform generation'
+	@echo '    Generate extensible xsa for board'
 	@echo ''
 	@echo '  make petalinux [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Build linux images'
@@ -109,7 +110,7 @@ ifeq ($(BOARD),zcu102)
 	echo "No special design, using petalinux included hardware design"
 	exit 0
 endif
-	mkdir -p $(BUILD_DIR)/images
+	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
 	cp -af hw/. $(BUILD_DIR)/hwflow_$(BOARD)_power1
 
 	cd $(BUILD_DIR)/hwflow_$(BOARD)_power1 && \
@@ -121,13 +122,15 @@ endif
 	vivado -mode batch -source main.tcl && \
 	cd outputs && \
 	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(PARTIAL_PDI).bif && \
-	cp -rfv gen_files			../../images && \
-	cp -rfv static_files		../../images && \
-	cp -fv $(BASE_PDI).rcdo		../../images && \
-	cp -fv $(BASE_PDI).rnpi		../../images && \
-	cp -fv $(BOARD)_power1.xsa	../../images && \
-	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o ../../images/greybox.pdi && \
-	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi ../../images/partial.pdi
+	cp -rfv gen_files		../../$(IMAGE_DIR) && \
+	cp -rfv static_files		../../$(IMAGE_DIR) && \
+	cp -fv $(BASE_PDI).rcdo		../../$(IMAGE_DIR) && \
+	cp -fv $(BASE_PDI).rnpi		../../$(IMAGE_DIR) && \
+	cp -fv $(BOARD)_power1.xsa	../../$(IMAGE_DIR) && \
+	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o \
+		../../$(IMAGE_DIR)/greybox.pdi && \
+	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi \
+		../../$(IMAGE_DIR)/partial.pdi
 
 #### Build petalinux
 .PHONY: petalinux
@@ -137,7 +140,7 @@ petalinux:
 	echo $(PLNX_BSP)
 	echo $(PLNX_SETTINGS)
 
-	mkdir -p $(BUILD_DIR)/images
+	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
 
 ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	cd $(BUILD_DIR) && \
@@ -145,7 +148,7 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	petalinux-create -t project -s $(PLNX_BSP) && \
 	cd $(HW_PREFIX)-$(REL) && \
 	$ [[ $(BOARD) = zcu102 ]] || cp $(HW_XSA) . && \
-	cp ../../platform/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
+	cp ../../boards/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	sed -i -E 's/.*CONFIG_imagefeature-debug-tweaks.+/CONFIG_imagefeature-debug-tweaks=y/'				project-spec/configs/rootfs_config && \
 	sed -i -E 's/.*CONFIG_imagefeature-serial-autologin-root.+/CONFIG_imagefeature-serial-autologin-root=y/' project-spec/configs/rootfs_config && \
@@ -155,20 +158,26 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	petalinux-create -t apps --template install --name power-demo --enable && \
 	cp -fv ../../apu_app/*	project-spec/meta-user/recipes-apps/power-demo/files && \
 	mv -fv project-spec/meta-user/recipes-apps/power-demo/files/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../images/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
 endif
 	. $(PLNX_SETTINGS) && \
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
 	petalinux-build && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/images/gen_files && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/images/static_files && \
-	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}				../images && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/plm.elf							../images/gen_files && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/psmfw.elf							../images/static_files/psm_fw.elf && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/system-default.dtb						../images/system.dtb && \
-	$ [[ $(BOARD) != zcu102 ]] || cp -rfv hardware/$(HW_PREFIX)-$(REL)/outputs/project_1.xsa	../images/zcu102_power1.xsa && \
-	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb}	../images
+	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)/gen_files && \
+	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)/static_files && \
+	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}	\
+			../$(IMAGE_DIR) && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -fv images/linux/plm.elf \
+			../$(IMAGE_DIR)/gen_files && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -fv images/linux/psmfw.elf \
+			../$(IMAGE_DIR)/static_files && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/system-default.dtb \
+			../$(IMAGE_DIR)/system.dtb && \
+	$ [[ $(BOARD) != zcu102 ]] || cp -rfv hardware/$(HW_PREFIX)-$(REL)/outputs/project_1.xsa \
+			../$(IMAGE_DIR)/zcu102_power1.xsa && \
+	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb} \
+			../$(IMAGE_DIR)
 
 
 #### Build RPU application (uses XSA from above builds)
@@ -177,12 +186,11 @@ rpu_app:
 	echo $(REL)
 	echo $(VITS_SETTINGS)
 
-	mkdir -p $(BUILD_DIR)/images
-ifeq ($(wildcard $(BUILD_DIR)/rpu_app/.*),)
+	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
 	mkdir -p $(BUILD_DIR)/$@
-
-	cd $(BUILD_DIR)/$@ && \
+ifeq ($(wildcard $(BUILD_DIR)/rpu_app/.*),)
 	. $(VITS_SETTINGS) && \
+	cd $(BUILD_DIR)/$@ && \
 	cp ../../$@/Makefile . && \
 	make $@ BOARD=$(BOARD) BASE_XSA=$(HW_XSA)
 else
@@ -190,7 +198,7 @@ else
 	cd $(BUILD_DIR)/$@ && \
 	make $@
 endif
-	cp -fv $(BUILD_DIR)/$@/$@/Debug/$@.elf $(BUILD_DIR)/images
+	cp -fv $(BUILD_DIR)/$@/$@/Debug/$@.elf $(BUILD_DIR)/$(IMAGE_DIR)
 
 
 #### Build Boot Image
@@ -201,11 +209,14 @@ boot_image:
 	echo $(PLNX_SETTINGS)
 	echo $(VITS_SETTINGS)
 
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv platform/$(BOARD)/$(BOARD)_board_topology.cdo	$(BUILD_DIR)/images
-	$ [[ $(BOARD) != zcu102 ]] || cp -rfv platform/$(BOARD)/boot.tcl	$(BUILD_DIR)/images
-	cp -rfv platform/$(BOARD)/$(BOARD)_boot.bif	$(BUILD_DIR)/images
+	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv boards/$(BOARD)/$(BOARD)_board_topology.cdo \
+			$(BUILD_DIR)/$(IMAGE_DIR)
+	$ [[ $(BOARD) != zcu102 ]] || cp -rfv boards/$(BOARD)/boot.tcl \
+			$(BUILD_DIR)/$(IMAGE_DIR)
+	cp -rfv boards/$(BOARD)/$(BOARD)_boot.bif \
+			$(BUILD_DIR)/$(IMAGE_DIR)
 
-	cd $(BUILD_DIR)/images && \
+	cd $(BUILD_DIR)/$(IMAGE_DIR) && \
 	. $(VITS_SETTINGS) && \
 	. $(PLNX_SETTINGS) && \
 	bootgen -arch $(PLATFORM) -image $(BOARD)_boot.bif -w -o BOOT.BIN
@@ -219,10 +230,11 @@ sd_image:
 	echo $(VITS_SETTINGS)
 
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
-	cp -fv images/linux/rootfs.tar.gz ../images && \
+	cp -fv images/linux/rootfs.tar.gz ../$(IMAGE_DIR) && \
 	. $(VITS_SETTINGS) && \
 	. $(PLNX_SETTINGS) && \
-	petalinux-package --wic -i ../images -o ../images -r ../images -b "BOOT.BIN system.dtb Image rootfs.tar.gz"
+	petalinux-package --wic -i ../images -o ../$(IMAGE_DIR) -r ../$(IMAGE_DIR) -b \
+		"BOOT.BIN system.dtb Image rootfs.tar.gz"
 
 # Start docker interactive shell
 .PHONY: sh bash
