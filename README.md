@@ -84,72 +84,75 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 ### 3. Directory Structure
 ```
 .pm_demo
-├─ apu_app - APU application
-│   ├─ power_demo.sh - power demo script
-│   └─ power-oob.bb  - power demo binary files bitbake
+├── apu_app - APU application
+│   ├── power-demo.bb - power demo binary files bitbake
+│   └── power_demo.sh - power demo script
 ├─ build - Build artifacts
 │   ├─ ...
-│   └─ images         - Contains all build images
-├─ hw   - Hardware design
-│   ├─ ip
-│   │   ├─ bufg_ctrl
-│   │   │   ├─ component.xml
-│   │   │   ├─ src
-│   │   │   │   └─ bufg_ctrl.v
-│   │   │   ├─ xgui
-│   │   │   │   └─ bufg_ctrl_v1_0.tcl
+│   └─ images.(BOARD) - Contains all build images
+├── boards
+│   ├── vck190
+│   │   ├── vck190_board_topology.cdo
+│   │   └── vck190_boot.bif - BOOT.BIN, boot information file
+│   ├── vmk180
+│   │   ├── vmk180_board_topology.cdo
+│   │   └── vmk180_boot.bif - BOOT.BIN, boot information file
+│   ├── zcu102
+│   │   ├── boot.tcl        - xsdb source this file for jtag boot
+│   │   └── zcu102_boot.bif - BOOT.BIN, boot information file
+│   └── uboot-env.vars
+├── hw   - Hardware design
+│   ├── ip
+│   │   ├── bufg_ctrl
+│   │   │   ├── src
+│   │   │   │   └── bufg_ctrl.v
+│   │   │   ├── xgui
+│   │   │   │   └── bufg_ctrl_v1_0.tcl
 │   │   │   └── component.xml
-│   │   └─ power
-│   │      ├─ src
-│   │      │   ├─ block_ram_daisy_chain.v
-│   │      │   ├─ generate_sfir.v
-│   │      │   ├─ logic_top.v
-│   │      │   ├─ logic.v
-│   │      │   ├─ power.v
-│   │      │   ├─ vio_bram
-│   │      │   │   └── vio_bram.xci
-│   │      │   └─ vio_top_logic
-│   │      │       └─ vio_top_logic.xci
-│   │      ├─ xgui
-│   │      │    └─ power_v1_0.tcl
-│   │      └─ component.xml
-│   ├─ xdc
-│   │   ├─ default.xdc                 - default constraints
-│   │   ├─ pl_clk_uncertainty.xdc      - clock constraints
-│   │   ├─ vck190_ddr4single_dimm1.xdc - ddr constraints
-│   │   └─ vck190.xdc                  - versal constraints
-│   ├─ config_bd.tcl
-│   └─ main.tcl
-├─ rpu_app - RPU application
-│   ├─ gic_setup.c
-│   ├─ gic_setup.h
-│   ├─ ipi.c
-│   ├─ ipi.h
-│   ├─ lscript.ld - Linker script
-│   ├─ main.c
-│   ├─ Makefile
-│   ├─ pm_init.c
-│   ├─ pm_init.h
-│   ├─ rtc.c
-│   └─ rtc.h
-├─ boards
-│   ├─ vck190
-│   |   ├─ vck190_board_topology.cdo
-│   │   └─ vck190_boot.bif - BOOT.BIN, boot information file
-│   ├─ vmk180
-│   |   ├─ vmk180_board_topology.cdo
-│   │   └─ vmk180_boot.bif - BOOT.BIN, boot information file
-│   ├─ zcu102
-│   │   ├─ boot.tcl        - xsdb source this file for jtag boot
-│   |   └─ zcu102_boot.bif - BOOT.BIN, boot information file
-│   |
-│   └─ uboot-env.vars - u-boot environment variable
-├─ Dockerfile   - Docker file
-├─ .gitignore
-├─ Makefile
-├─ README.md
-├─ settings.sh  - Verify petalinux, vitis paths
-└─ xmake        - Docker make file (petalinux only for now)
+│   │   └── power
+│   │       ├── src
+│   │       │   ├── vio_bram
+│   │       │   │   └── vio_bram.xci
+│   │       │   ├── vio_top_logic
+│   │       │   │   └── vio_top_logic.xci
+│   │       │   ├── block_ram_daisy_chain.v
+│   │       │   ├── generate_sfir.v
+│   │       │   ├── logic_top.v
+│   │       │   ├── logic.v
+│   │       │   └── power.v
+│   │       ├── xgui
+│   │       │   └── power_v1_0.tcl
+│   │       └── component.xml
+│   ├── xdc
+│   │   ├── qor_scripts
+│   │   │   └── prohibit_select_bli_bels_for_hold.tcl
+│   │   ├── default.xdc
+│   │   ├── pblock.xdc
+│   │   ├── pl_clk_uncertainty.xdc
+│   │   ├── vck190_ddr4single_dimm1.xdc
+│   │   └── vck190.xdc
+│   ├── dr.bd.tcl
+│   ├── main.tcl
+│   ├── pfm_decls.tcl
+│   └── project.tcl
+├── rpu_app - RPU application
+│   ├── gic_setup.c
+│   ├── gic_setup.h
+│   ├── ipi.c
+│   ├── ipi.h
+│   ├── lscript.ld - Linker script
+│   ├── main.c
+│   ├── Makefile
+│   ├── pm_init.c
+│   ├── pm_init.h
+│   ├── rtc.c
+│   └── rtc.h
+├── Dockerfile
+├── LICENSE
+├── Makefile
+├── README.md
+├── settings.sh  - Verify petalinux, vitis paths
+└── xmake        - Docker make file (petalinux only for now)
 ```
 ### 4. Test
 <b>SD mode:</b>
