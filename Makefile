@@ -152,6 +152,8 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	sed -i -E 's/.*CONFIG_imagefeature-debug-tweaks.+/CONFIG_imagefeature-debug-tweaks=y/'				project-spec/configs/rootfs_config && \
 	sed -i -E 's/.*CONFIG_imagefeature-serial-autologin-root.+/CONFIG_imagefeature-serial-autologin-root=y/' project-spec/configs/rootfs_config && \
+	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || sed -i -E 's/.*CONFIG_zocl.+/CONFIG_zocl=y/' project-spec/configs/rootfs_config && \
+	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || sed -i -E 's/.*CONFIG_xrt.+/CONFIG_xrt=y/' project-spec/configs/rootfs_config && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/.*CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS.+/CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS=\"-DFSBL_A53_TCM_ECC_EXCLUDE_VAL=0\"/' project-spec/configs/config && \
 	petalinux-config --silentconfig && \
 	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ && \

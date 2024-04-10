@@ -61,6 +61,17 @@ new_bif:
  }
  image
  {
+  name = aie_subsys
+  id = 0x421c005
+  partition
+  {
+   id = 0x07
+   type = cdo
+   file = gen_files/ai_engine_data.cdo
+  }
+ }
+ image
+ {
   name = fpd
   id = 0x420c003
   partition
