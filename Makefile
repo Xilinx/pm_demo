@@ -11,11 +11,12 @@ RELEASE = 2024.1
 BOARD     = vck190
 DEVICE    = xcvc1902
 PLATFORM  = versal
+PLATFORM_NAME  = versal-vck190 
 BUILD_DIR = build
 IMAGE_DIR = images.$(BOARD)
 HW_PREFIX = xilinx-$(BOARD)
 HW_XSA    = ../images.$(BOARD)/$(BOARD)_power1.xsa
-
+VER              ?= 202410.1
 # Set paths from environment variables
 PLNX_BSP      = $(PETALINUX_BSP)
 PLNX_SETTINGS = $(PETALINUX_SETTINGS)
@@ -115,11 +116,10 @@ endif
 
 	cd $(BUILD_DIR)/hwflow_$(BOARD)_power1 && \
 	$ [[ $(BOARD) = vck190 ]] || mv xdc/vck190.xdc xdc/$(BOARD).xdc && \
-	$ [[ $(BOARD) = vck190 ]] || mv xdc/vck190_ddr4single_dimm1.xdc xdc/$(BOARD)_ddr4single_dimm1.xdc && \
 	$ [[ $(BOARD) = vck190 ]] || find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/vck190/vmk180/g' && \
 	$ [[ $(BOARD) = vck190 ]] || find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/vc1902/vm1802/g' && \
 	. $(VITS_SETTINGS) && \
-	vivado -mode batch -source main.tcl && \
+	vivado -mode batch -source main.tcl -tclargs $(PLATFORM_NAME) $(VER) && \
 	cd outputs && \
 	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(PARTIAL_PDI).bif && \
 	cp -rfv gen_files		../../$(IMAGE_DIR) && \

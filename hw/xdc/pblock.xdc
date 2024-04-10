@@ -41,4 +41,3 @@ set_property SNAPPING_MODE ON [get_pblocks pblock_slot0]
 set_property IS_SOFT FALSE [get_pblocks pblock_slot0]
 
 
-
