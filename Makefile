@@ -64,7 +64,7 @@ else
 endif
 
 #### Build all
-all: hw_design petalinux xgemm rpu_app boot_image
+all: hw_design xgemm petalinux rpu_app boot_image
 .PHONY: all
 
 
