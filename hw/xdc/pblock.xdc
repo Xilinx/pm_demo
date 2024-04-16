@@ -1,6 +1,6 @@
 #******************************************************************************
 # Copyright (C) 2020-2022 Xilinx, Inc. All rights reserved.
-# Copyright (C) 2022-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2022-2024 Advanced Micro Devices, Inc. All rights reserved.
 # SPDX-License-Identifier: MIT
 #******************************************************************************
 
@@ -8,10 +8,10 @@
 #
 #This file works only with our platform. There will be need to review this xdc as per your resource requirements in static region.
 # Creating pblock for Vitis Region
-set_property PACKAGE_PIN AW27 [get_ports clk_p]
-set_property IOSTANDARD LVDS15 [get_ports clk_p]
-set_property PACKAGE_PIN AY27 [get_ports clk_n]
-set_property IOSTANDARD LVDS15 [get_ports clk_n]
+#set_property PACKAGE_PIN AW27 [get_ports clk_p]
+#set_property IOSTANDARD LVDS15 [get_ports clk_p]
+#set_property PACKAGE_PIN AY27 [get_ports clk_n]
+#set_property IOSTANDARD LVDS15 [get_ports clk_n]
 create_pblock pblock_slot0
 add_cells_to_pblock [get_pblocks pblock_slot0] [get_cells -quiet [list vck190_power1_i/slot0]]
 

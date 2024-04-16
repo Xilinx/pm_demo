@@ -62,8 +62,8 @@ proc create_hier_cell_slot0 { parentCell nameHier } {
   # Create pins
   create_bd_pin -dir I -type clk ExtClk
   create_bd_pin -dir I -type rst ExtReset
-  create_bd_pin -dir O -type intr Interrupt
-  create_bd_pin -dir O -type intr Interrupt1
+  #create_bd_pin -dir O -type intr Interrupt
+  #create_bd_pin -dir O -type intr Interrupt1
 
   # Create instance: ConfigNoc, and set properties
   set ConfigNoc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_noc ConfigNoc ]
@@ -258,11 +258,11 @@ proc create_hier_cell_slot0 { parentCell nameHier } {
   set_property -dict [list CONFIG.ASSOCIATED_BUSIF {S03_AXI:S02_AXI:S00_AXI:S01_AXI}] [get_bd_pins /slot0/DDRNoc/aclk0]
 
 
-  create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_1
-  set_property -dict [list CONFIG.NUM_PORTS {32} CONFIG.IN0_WIDTH {1}] [get_bd_cells xlconcat_1]
+  #create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_1
+  #set_property -dict [list CONFIG.NUM_PORTS {32} CONFIG.IN0_WIDTH {1}] [get_bd_cells xlconcat_1]
 
-  create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_2
-  set_property -dict [list CONFIG.NUM_PORTS {31} CONFIG.IN0_WIDTH {1}] [get_bd_cells xlconcat_2]
+  #create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_2
+  #set_property -dict [list CONFIG.NUM_PORTS {31} CONFIG.IN0_WIDTH {1}] [get_bd_cells xlconcat_2]
   # Create instance: LPDDRNoc, and set properties
   set LPDDRNoc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_noc LPDDRNoc ]
   set_property -dict [ list \
@@ -356,8 +356,8 @@ endgroup
   connect_bd_intf_net -intf_net icn_ctrl_3_M00_AXI      [get_bd_intf_pins to_delete_kernel_ctrl_1/S_AXI] [get_bd_intf_pins icn_ctrl_3/M00_AXI]
   connect_bd_intf_net -intf_net icn_ctrl_4_M00_AXI      [get_bd_intf_pins to_delete_kernel_ctrl_2/S_AXI] [get_bd_intf_pins icn_ctrl_4/M00_AXI]
   connect_bd_intf_net -intf_net icn_ctrl_5_M00_AXI      [get_bd_intf_pins to_delete_kernel_ctrl_3/S_AXI] [get_bd_intf_pins icn_ctrl_5/M00_AXI]
-  connect_bd_net                                        [get_bd_pins Interrupt]                          [get_bd_pins xlconcat_1/dout]
-  connect_bd_net                                        [get_bd_pins Interrupt1]                         [get_bd_pins xlconcat_2/dout]
+ # connect_bd_net                                        [get_bd_pins Interrupt]                          [get_bd_pins xlconcat_1/dout]
+ # connect_bd_net                                        [get_bd_pins Interrupt1]                         [get_bd_pins xlconcat_2/dout]
 
   # Create port connections
   connect_bd_net -net PlClocks_clk_out1 [get_bd_pins clk_wizard_0/clk_out1] [get_bd_pins psr_104mhz/slowest_sync_clk] [get_bd_pins icn_ctrl_1/aclk] [get_bd_pins icn_ctrl_2/aclk] [get_bd_pins icn_ctrl_3/aclk] [get_bd_pins to_delete_kernel_ctrl_0/aclk ] [get_bd_pins to_delete_kernel_ctrl_1/aclk ] [get_bd_pins icn_ctrl_4/aclk] [get_bd_pins icn_ctrl_5/aclk] [get_bd_pins to_delete_kernel_ctrl_2/aclk ] [get_bd_pins to_delete_kernel_ctrl_3/aclk ]
@@ -586,7 +586,8 @@ proc create_root_design { parentCell } {
 
 
   # Create instance: CIPS_0, and set properties
-  set CIPS_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:versal_cips CIPS_0 ]
+
+set CIPS_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:versal_cips CIPS_0 ]
 set_property -dict [list \
   CONFIG.PS_BOARD_INTERFACE {Custom} \
   CONFIG.PS_PMC_CONFIG { \
@@ -712,7 +713,7 @@ set_property -dict [list \
     PMC_GPIO_EMIO_WIDTH_HDL {64} \
     PMC_HSM0_CLK_ENABLE {1} \
     PMC_HSM1_CLK_ENABLE {1} \
-    PMC_I2CPMC_PERIPHERAL {{ENABLE 0} {IO {PMC_MIO 46 .. 47}}} \
+    PMC_I2CPMC_PERIPHERAL {{ENABLE 1} {IO EMIO}} \
     PMC_MIO0 {{AUX_IO 0} {DIRECTION out} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
     PMC_MIO1 {{AUX_IO 0} {DIRECTION inout} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
     PMC_MIO10 {{AUX_IO 0} {DIRECTION inout} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
@@ -986,7 +987,7 @@ set_property -dict [list \
     PS_I2C0_PERIPHERAL {{ENABLE 1} {IO {PMC_MIO 46 .. 47}}} \
     PS_I2C1_PERIPHERAL {{ENABLE 1} {IO {PMC_MIO 44 .. 45}}} \
     PS_I2CSYSMON_PERIPHERAL {{ENABLE 0} {IO {PS_MIO 23 .. 24}}} \
-    PS_IRQ_USAGE {{CH0 1} {CH1 0} {CH10 0} {CH11 0} {CH12 0} {CH13 0} {CH14 0} {CH15 0} {CH2 0} {CH3 0} {CH4 0} {CH5 0} {CH6 0} {CH7 0} {CH8 0} {CH9 0}} \
+    PS_IRQ_USAGE {{CH0 0} {CH1 0} {CH10 0} {CH11 0} {CH12 0} {CH13 0} {CH14 0} {CH15 0} {CH2 0} {CH3 0} {CH4 0} {CH5 0} {CH6 0} {CH7 0} {CH8 0} {CH9 0}} \
     PS_LPDMA0_COHERENCY {0} \
     PS_LPDMA0_ROUTE_THROUGH_FPD {1} \
     PS_LPDMA1_COHERENCY {0} \
@@ -1407,29 +1408,31 @@ set_property -dict [list \
   } \
 ] $CIPS_0
 
-  set icn_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect icn_ctrl_0 ]
+
+
+   set icn_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect icn_ctrl_0 ]
   set_property -dict [ list \
     CONFIG.NUM_CLKS {1} \
     CONFIG.NUM_MI {4} \
     CONFIG.NUM_SI {1} \
     ] $icn_ctrl_0
   
-  set axi_intc_cascaded_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc axi_intc_cascaded_1 ]
-  set_property -dict [ list \
-    CONFIG.C_IRQ_CONNECTION {1} \
-    CONFIG.C_ASYNC_INTR  {0xFFFFFFFF} \
-    ] $axi_intc_cascaded_1
-
-  set axi_intc_parent [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc axi_intc_parent ]
-  set_property -dict [ list \
-    CONFIG.C_IRQ_CONNECTION {1} \
-    CONFIG.C_ASYNC_INTR  {0xFFFFFFFF} \
-    CONFIG.C_CASCADE_MASTER {1} \
-    CONFIG.C_EN_CASCADE_MODE {1} \
-    ] $axi_intc_parent
+#  set axi_intc_cascaded_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc axi_intc_cascaded_1 ]
+#  set_property -dict [ list \
+#    CONFIG.C_IRQ_CONNECTION {1} \
+#    CONFIG.C_ASYNC_INTR  {0xFFFFFFFF} \
+#    ] $axi_intc_cascaded_1
+#
+#  set axi_intc_parent [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc axi_intc_parent ]
+#  set_property -dict [ list \
+#    CONFIG.C_IRQ_CONNECTION {1} \
+#    CONFIG.C_ASYNC_INTR  {0xFFFFFFFF} \
+#    CONFIG.C_CASCADE_MASTER {1} \
+#    CONFIG.C_EN_CASCADE_MODE {1} \
+#    ] $axi_intc_parent
 
   set dfx_decoupler [create_bd_cell -type ip -vlnv xilinx.com:ip:dfx_decoupler:1.0 dfx_decoupler]
-  set_property -dict [list CONFIG.ALL_PARAMS {HAS_SIGNAL_CONTROL 0 HAS_SIGNAL_STATUS 0 HAS_AXI_LITE 1 INTF {intf_0 {ID 0 VLNV xilinx.com:interface:aximm_rtl:1.0 MODE slave} intf_1 {ID 1 VLNV xilinx.com:signal:interrupt_rtl:1.0 MODE master} intf_2 {ID 2 VLNV xilinx.com:signal:interrupt_rtl:1.0 MODE master} intf_3 {ID 3 VLNV xilinx.com:signal:clock_rtl:1.0 MODE slave} intf_4 {ID 4 VLNV xilinx.com:signal:reset_rtl:1.0 MODE slave}}}] $dfx_decoupler
+  set_property -dict [list CONFIG.ALL_PARAMS {HAS_SIGNAL_CONTROL 0 HAS_SIGNAL_STATUS 0 HAS_AXI_LITE 1 INTF {intf_0 {ID 0 VLNV xilinx.com:interface:aximm_rtl:1.0 MODE slave}  intf_3 {ID 1 VLNV xilinx.com:signal:clock_rtl:1.0 MODE slave} intf_4 {ID 2 VLNV xilinx.com:signal:reset_rtl:1.0 MODE slave}}}] $dfx_decoupler
 
   # Create instance: ps_noc, and set properties
   set ps_noc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_noc ps_noc ]
@@ -1570,16 +1573,16 @@ set_property -dict [list \
     CONFIG.PRIM_IN_FREQ.VALUE_SRC PROPAGATED \
     CONFIG.PRIM_SOURCE {Global_buffer} \
     ] $clk_wizard_1
-  create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0
-  set_property -dict [list CONFIG.NUM_PORTS {2} CONFIG.IN0_WIDTH.VALUE_SRC USER CONFIG.IN0_WIDTH {31}] [get_bd_cells xlconcat_0]
+  #create_bd_cell -type ip -vlnv xilinx.com:ip:xlconcat:2.1 xlconcat_0
+  #set_property -dict [list CONFIG.NUM_PORTS {2} CONFIG.IN0_WIDTH.VALUE_SRC USER CONFIG.IN0_WIDTH {31}] [get_bd_cells xlconcat_0]
 
   # Create interface connections
   connect_bd_intf_net -intf_net ShellSide_M_AXI [get_bd_intf_pins icn_ctrl_0/S00_AXI]          [get_bd_intf_pins CIPS_0/M_AXI_FPD]
   connect_bd_intf_net -intf_net dfx_decoupler_M_AXI  [get_bd_intf_pins dfx_decoupler/rp_intf_0] [get_bd_intf_pins slot0/PL_CTRL_S_AXI]
   connect_bd_intf_net  -intf_net icn_ctrl_0_M02_AXI [get_bd_intf_pins icn_ctrl_0/M02_AXI]    [get_bd_intf_pins dfx_decoupler/s_axi_reg]
   connect_bd_intf_net -intf_net icn_ctrl_0_M00_AXI [get_bd_intf_pins dfx_decoupler/s_intf_0] [get_bd_intf_pins icn_ctrl_0/M00_AXI]
-  connect_bd_intf_net -intf_net icn_ctrl_0_M01_AXI [get_bd_intf_pins icn_ctrl_0/M01_AXI] [get_bd_intf_pins axi_intc_parent/s_axi]
-  connect_bd_intf_net -intf_net icn_ctrl_0_M03_AXI [get_bd_intf_pins icn_ctrl_0/M03_AXI] [get_bd_intf_pins axi_intc_cascaded_1/s_axi]
+  #connect_bd_intf_net -intf_net icn_ctrl_0_M01_AXI [get_bd_intf_pins icn_ctrl_0/M01_AXI] [get_bd_intf_pins axi_intc_parent/s_axi]
+  #connect_bd_intf_net -intf_net icn_ctrl_0_M03_AXI [get_bd_intf_pins icn_ctrl_0/M03_AXI] [get_bd_intf_pins axi_intc_cascaded_1/s_axi]
   connect_bd_intf_net -intf_net slot0_DDR_0 [get_bd_intf_pins slot0/DDR_0] [get_bd_intf_pins noc_ddr/S04_INI]
   connect_bd_intf_net -intf_net slot0_DDR_1 [get_bd_intf_pins slot0/DDR_1] [get_bd_intf_pins noc_ddr/S05_INI]
   connect_bd_intf_net -intf_net slot0_DDR_2 [get_bd_intf_pins slot0/DDR_2] [get_bd_intf_pins noc_ddr/S06_INI]
@@ -1613,23 +1616,23 @@ set_property -dict [list \
   connect_bd_intf_net -intf_net ps_noc_M06_INI [get_bd_intf_pins noc_lpddr/S02_INI] [get_bd_intf_pins ps_noc/M06_INI]
   connect_bd_intf_net -intf_net ps_noc_M07_INI [get_bd_intf_pins noc_lpddr/S03_INI] [get_bd_intf_pins ps_noc/M07_INI]
   connect_bd_intf_net -intf_net ps_noc_M08_INI [get_bd_intf_pins slot0/AIE_CTRL_INI] [get_bd_intf_pins ps_noc/M08_INI]
-  connect_bd_net                               [get_bd_pins axi_intc_parent/irq] [get_bd_pins CIPS_0/pl_ps_irq0]
-  connect_bd_net                               [get_bd_pins slot0/Interrupt] [get_bd_pins dfx_decoupler/rp_intf_1_INTERRUPT]
-  connect_bd_net                               [get_bd_pins dfx_decoupler/s_intf_1_INTERRUPT] [get_bd_pins axi_intc_cascaded_1/intr]
-  connect_bd_net                               [get_bd_pins slot0/Interrupt1] [get_bd_pins dfx_decoupler/rp_intf_2_INTERRUPT]
-  connect_bd_net                               [get_bd_pins dfx_decoupler/s_intf_2_INTERRUPT] [get_bd_pins xlconcat_0/In0]
-  connect_bd_net -net axi_intc_cascaded_1_irq  [get_bd_pins axi_intc_cascaded_1/irq] [get_bd_pins xlconcat_0/In1]
-  connect_bd_net -net xlconcat_0_dout          [get_bd_pins axi_intc_parent/intr] [get_bd_pins xlconcat_0/dout]
+  #connect_bd_net                               [get_bd_pins axi_intc_parent/irq] [get_bd_pins CIPS_0/pl_ps_irq0]
+  #connect_bd_net                               [get_bd_pins slot0/Interrupt] [get_bd_pins dfx_decoupler/rp_intf_1_INTERRUPT]
+  #connect_bd_net                               [get_bd_pins dfx_decoupler/s_intf_1_INTERRUPT] [get_bd_pins axi_intc_cascaded_1/intr]
+  #connect_bd_net                               [get_bd_pins slot0/Interrupt1] [get_bd_pins dfx_decoupler/rp_intf_2_INTERRUPT]
+  #connect_bd_net                               [get_bd_pins dfx_decoupler/s_intf_2_INTERRUPT] [get_bd_pins xlconcat_0/In0]
+  #connect_bd_net -net axi_intc_cascaded_1_irq  [get_bd_pins axi_intc_cascaded_1/irq] [get_bd_pins xlconcat_0/In1]
+  #connect_bd_net -net xlconcat_0_dout          [get_bd_pins axi_intc_parent/intr] [get_bd_pins xlconcat_0/dout]
 
   # Create port connections
   connect_bd_net -net CIPS_0_pl_clk0 [get_bd_pins CIPS_0/pl0_ref_clk] [get_bd_pins clk_wizard_1/clk_in1]
-  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins dfx_decoupler/s_intf_4_RST] [get_bd_pins IsoReset/peripheral_aresetn] [get_bd_pins axi_intc_parent/s_axi_aresetn] [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn] [get_bd_pins axi_intc_cascaded_1/s_axi_aresetn]
+  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins dfx_decoupler/s_intf_4_RST] [get_bd_pins IsoReset/peripheral_aresetn]  [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn] 
   connect_bd_net -net ps_cips_fpd_axi_noc_axi0_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk4]
   connect_bd_net -net ps_cips_fpd_axi_noc_axi1_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi1_clk] [get_bd_pins ps_noc/aclk5]
   connect_bd_net -net ps_cips_lpd_axi_noc_clk [get_bd_pins CIPS_0/lpd_axi_noc_clk] [get_bd_pins ps_noc/aclk6]
   connect_bd_net -net ps_cips_pl0_resetn [get_bd_pins IsoReset/ext_reset_in] [get_bd_pins CIPS_0/pl0_resetn] [get_bd_pins clk_wizard_1/resetn]
   connect_bd_net -net clk_wizard_1_locked [get_bd_pins clk_wizard_1/locked] [get_bd_pins IsoReset/dcm_locked]
-  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins dfx_decoupler/s_intf_3_CLK] [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1] [get_bd_pins axi_intc_parent/s_axi_aclk] [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk] [get_bd_pins axi_intc_cascaded_1/s_axi_aclk] 
+  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins dfx_decoupler/s_intf_3_CLK] [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1]  [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk]  
   connect_bd_net -net ps_cips_pmc_axi_noc_axi0_clk [get_bd_pins CIPS_0/pmc_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk7]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi0_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi0_clk] [get_bd_pins ps_noc/aclk0]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi1_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi1_clk] [get_bd_pins ps_noc/aclk1]
@@ -1639,8 +1642,8 @@ set_property -dict [list \
   connect_bd_net -net dfx_decoupler_reset_out [get_bd_pins dfx_decoupler/rp_intf_4_RST] [get_bd_pins slot0/ExtReset]
 
   # Create address segments
-  assign_bd_address -offset 0xA4000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CIPS_0/M_AXI_FPD] [get_bd_addr_segs axi_intc_cascaded_1/S_AXI/Reg] -force
-  assign_bd_address -offset 0xA5000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CIPS_0/M_AXI_FPD] [get_bd_addr_segs axi_intc_parent/S_AXI/Reg] -force
+ # assign_bd_address -offset 0xA4000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CIPS_0/M_AXI_FPD] [get_bd_addr_segs axi_intc_cascaded_1/S_AXI/Reg] -force
+ # assign_bd_address -offset 0xA5000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CIPS_0/M_AXI_FPD] [get_bd_addr_segs axi_intc_parent/S_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CIPS_0/PMC_NOC_AXI_0]  [get_bd_addr_segs noc_ddr/S00_INI/C0_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CIPS_0/LPD_AXI_NOC_0] [get_bd_addr_segs noc_ddr/S00_INI/C0_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces CIPS_0/FPD_AXI_NOC_1] [get_bd_addr_segs noc_ddr/S00_INI/C0_DDR_LOW0] -force

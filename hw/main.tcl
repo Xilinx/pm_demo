@@ -38,6 +38,7 @@ create_run child_1_impl_1 -parent_run impl_1 -flow {Vivado Implementation 2024} 
 set_property PR_CONFIGURATION config_1 [get_runs impl_1]
 
 set_property -name STEPS.PLACE_DESIGN.TCL.PRE -value [get_files -of_object [get_filesets utils_1] prohibit_select_bli_bels_for_hold.tcl] -objects [get_runs impl_1]
+
 launch_runs synth_1 -jobs 20
 wait_on_run synth_1
 
