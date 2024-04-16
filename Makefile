@@ -126,7 +126,7 @@ endif
 	cp -rfv static_files		../../$(IMAGE_DIR) && \
 	cp -fv $(BASE_PDI).rcdo		../../$(IMAGE_DIR) && \
 	cp -fv $(BASE_PDI).rnpi		../../$(IMAGE_DIR) && \
-	cp -fv $(BOARD)_power1.xsa	../../$(IMAGE_DIR) && \
+	cp -rfv *.xsa				../../$(IMAGE_DIR) && \
 	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o \
 		../../$(IMAGE_DIR)/greybox.pdi && \
 	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi \
@@ -161,6 +161,8 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	cp -fv ../../apu_app/*	project-spec/meta-user/recipes-apps/power-demo/files && \
 	mv -fv project-spec/meta-user/recipes-apps/power-demo/files/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
+
 	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
 endif
 	. $(PLNX_SETTINGS) && \
@@ -180,6 +182,28 @@ endif
 			../$(IMAGE_DIR)/zcu102_power1.xsa && \
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb} \
 			../$(IMAGE_DIR)
+
+
+#### Build AIE application (uses XSA from above builds)
+#	export BASE_XSA=../../images.$(BOARD)/$(BOARD)_power1.xsa
+.PHONY: xgemm
+xgemm:
+ifneq ($(BOARD),vck190)
+	echo "No AIE in the device"
+	exit 0
+endif
+	echo $(REL)
+	echo $(VITS_SETTINGS)
+	echo $(PLNX_BSP)
+	echo $(PLNX_SETTINGS)
+
+	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
+	mkdir -p $(BUILD_DIR)/$@
+	cp -rf apu_app/xgemm $(BUILD_DIR)
+
+	cd $(BUILD_DIR)/$@ && \
+	./build.sh
+	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication* $(BUILD_DIR)/$(IMAGE_DIR)
 
 
 #### Build RPU application (uses XSA from above builds)
