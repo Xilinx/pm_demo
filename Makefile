@@ -64,7 +64,7 @@ else
 endif
 
 #### Build all
-all: hw_design petalinux rpu_app boot_image
+all: hw_design petalinux xgemm rpu_app boot_image
 .PHONY: all
 
 
@@ -74,13 +74,16 @@ help:
 	@echo 'Usage:'
 	@echo ''
 	@echo '  make'
-	@echo '    hw_design petalinux rpu_app boot_image'
+	@echo '    hw_design petalinux xgemm rpu_app boot_image'
 	@echo ''
 	@echo '  make hw_design [BOARD=vck190|vmk180]'
 	@echo '    Generate extensible xsa for board'
 	@echo ''
 	@echo '  make petalinux [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Build linux images'
+	@echo ''
+	@echo '  make xgemm'
+	@echo '    Build xgemm'
 	@echo ''
 	@echo '  make rpu_app'
 	@echo '    Build rpu_app'
@@ -185,7 +188,6 @@ endif
 
 
 #### Build AIE application (uses XSA from above builds)
-#	export BASE_XSA=../../images.$(BOARD)/$(BOARD)_power1.xsa
 .PHONY: xgemm
 xgemm:
 ifneq ($(BOARD),vck190)
