@@ -158,11 +158,11 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	petalinux-config --silentconfig && \
 	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ && \
 	petalinux-create -t apps --template install --name power-demo --enable && \
-	cp -fv ../../apu_app/*	project-spec/meta-user/recipes-apps/power-demo/files && \
-	mv -fv project-spec/meta-user/recipes-apps/power-demo/files/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
+	cp -fv ../../apu_app/power_demo.sh	project-spec/meta-user/recipes-apps/power-demo/files && \
+	cp -fv ../../apu_app/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
-
+	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || \
+		cp -rfv ../$(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
 endif
 	. $(PLNX_SETTINGS) && \

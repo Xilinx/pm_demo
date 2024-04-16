@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023- 2024, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 #
@@ -19,16 +19,22 @@ SRC_URI = "file://power-demo \
 		file://aie-matrix-multiplication.xclbin \
 		file://power_demo.sh \
 		"
+
+RDEPENDS:${PN} += " xrt \
+		openssl \
+			"
+INSANE_SKIP:${PN} += " arch file-rdeps"
+
 S = "${WORKDIR}"
 
 do_install() {
 	echo "D: ${D}"
 	echo "S: ${S}"
 	install -d ${D}${bindir}
-	install -m 0755 ${S}/partial.pdi                        ${D}${bindir}
-	install -m 0755 ${S}/greybox.pdi                        ${D}${bindir}
-	install -m 0755 ${S}/aie-matrix-multiplication          ${D}${bindir}
-	install -m 0755 ${S}/aie-matrix-multiplication.xclbin   ${D}${bindir}
-	install -m 0755 ${S}/power_demo.sh                      ${D}${bindir}
+	install -m 0755 ${S}/partial.pdi                        ${D}/${bindir}
+	install -m 0755 ${S}/greybox.pdi                        ${D}/${bindir}
+	install -m 0755 ${S}/aie-matrix-multiplication          ${D}/${bindir}
+	install -m 0755 ${S}/aie-matrix-multiplication.xclbin   ${D}/${bindir}
+	install -m 0755 ${S}/power_demo.sh                      ${D}/${bindir}
 }
 
