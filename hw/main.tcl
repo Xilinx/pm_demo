@@ -68,9 +68,8 @@ set_property platform.vendor "xilinx" [current_project]
 
 set_property platform.version "1.0" [current_project]
 
-write_hw_platform -fixed -force -include_bit -file ../hwflow_vck190_power1/outputs/vck190_power1.xsa
-write_hw_platform -force -fixed -static -file ../hwflow_vck190_power1/outputs/vck190_power1_static.xsa
-write_hw_platform -force -rp vck190_power1_i/slot0 -file ../hwflow_vck190_power1/outputs/vck190_power1_rp_hw.xsa
+write_hw_platform -force -fixed -hw -static -file ../hwflow_vck190_power1/outputs/vck190_power1_static.xsa
+write_hw_platform -force -hw -rp vck190_power1_i/slot0 -file ../hwflow_vck190_power1/outputs/vck190_power1_rp_hw.xsa
 validate_hw_platform -verbose ../hwflow_vck190_power1/outputs/vck190_power1_static.xsa
 validate_hw_platform -verbose ../hwflow_vck190_power1/outputs/vck190_power1_rp_hw.xsa
 open_checkpoint ../hwflow_vck190_power1/vck190_power1.runs/impl_1/vck190_power1_wrapper_routed_bb.dcp

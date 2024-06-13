@@ -28,6 +28,7 @@ BASE_PDI    = $(BOARD)_base_wrapper_out
 PARTIAL_PDI = $(BOARD)_base_wrapper_out_pblock_slot0_partial
 
 SHELL := /bin/bash
+CURDIR = $(shell pwd)
 
 # Set paths if environment variables empty
 INSTALL_DIR   = /proj/petalinux/$(RELEASE)/petalinux-v$(RELEASE)_daily_latest
@@ -64,7 +65,7 @@ else
 endif
 
 #### Build all
-all: hw_design xgemm petalinux rpu_app boot_image
+all: hw_design platform overlay xgemm petalinux rpu_app boot_image
 .PHONY: all
 
 
@@ -74,10 +75,16 @@ help:
 	@echo 'Usage:'
 	@echo ''
 	@echo '  make'
-	@echo '    hw_design petalinux xgemm rpu_app boot_image'
+	@echo '    hw_design petalinux platform overlay xgemm rpu_app boot_image'
 	@echo ''
 	@echo '  make hw_design [BOARD=vck190|vmk180]'
 	@echo '    Generate extensible xsa for board'
+	@echo ''
+	@echo '  make platform [BOARD=vck190|vmk180]'
+	@echo '    Generate base platform'
+	@echo ''
+	@echo '  make overlay [BOARD=vck190|vmk180]'
+	@echo '    Generate overlay (power + matrix_mul_thermal)'
 	@echo ''
 	@echo '  make petalinux [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Build linux images'
@@ -134,6 +141,23 @@ endif
 		../../$(IMAGE_DIR)/greybox.pdi && \
 	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi \
 		../../$(IMAGE_DIR)/partial.pdi
+
+.PHONY: platform
+platform:
+	@echo $(BOARD)
+	mkdir -p $(BUILD_DIR)/platforms/$(BOARD)
+	cp -rf platforms/. $(BUILD_DIR)/platforms/$(BOARD)/.
+	make -C $(BUILD_DIR)/platforms/$(BOARD)
+
+.PHONY: overlay
+overlay:
+	cp -rf overlays $(BUILD_DIR)
+	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(CURDIR)/$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
+
+.PHONY: overlay_auto
+overlay_auto:
+	cp -rf overlays $(BUILD_DIR)
+	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal_auto BOARD=$(BOARD) PLATFORM=$(CURDIR)/$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
 
 #### Build petalinux
 .PHONY: petalinux
@@ -203,9 +227,6 @@ endif
 	mkdir -p $(BUILD_DIR)/$@
 	cp -rf apu_app/xgemm $(BUILD_DIR)
 
-	cd $(BUILD_DIR)/$@ && \
-	./build.sh
-	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication* $(BUILD_DIR)/$(IMAGE_DIR)
 
 
 #### Build RPU application (uses XSA from above builds)
