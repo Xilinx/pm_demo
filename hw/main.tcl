@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: MIT
 #******************************************************************************
 
-#file mkdir build 
-#cd build
 source ./project.tcl
 source ./dr.bd.tcl
 source ./pfm_decls.tcl
@@ -17,8 +15,7 @@ add_files -norecurse ./vck190_power1.srcs/sources_1/bd/vck190_power1/hdl/vck190_
 #Generating Target
 generate_target all [get_files ./vck190_power1.srcs/sources_1/bd/vck190_power1/vck190_power1.bd]
 update_compile_order -fileset sources_1
-set_property top vck190_power1_wrapper [current_fileset] 
-
+set_property top vck190_power1_wrapper [current_fileset]
 
 # Generate simulation top for your entire design which would include
 # aggregated NOC in the form of xlnoc.bd
@@ -42,8 +39,8 @@ set_property -name STEPS.PLACE_DESIGN.TCL.PRE -value [get_files -of_object [get_
 launch_runs synth_1 -jobs 20
 wait_on_run synth_1
 
-launch_runs impl_1 -to_step write_device_image -jobs 10
-wait_on_run impl_1
+launch_runs impl_1 child_1_impl_1 -to_step write_device_image -jobs 10
+wait_on_run impl_1 child_1_impl_1
 open_run impl_1
 file mkdir ./outputs
 
@@ -55,6 +52,8 @@ file delete -force ./outputs/gen_files
 file copy -force ./vck190_power1.runs/impl_1/gen_files ./outputs/
 file delete -force ./outputs/static_files
 file copy -force ./vck190_power1.runs/impl_1/static_files ./outputs/
+file copy -force ./vck190_power1.runs/child_1_impl_1/vck190_power1_i_slot0_greybox_partial.pdi ./outputs/greybox_partial.pdi
+file copy -force ./vck190_power1.runs/child_1_impl_1/vck190_power1_i_slot0_greybox_partial.bif ./outputs/greybox_partial.bif
 
 file copy -force ./hw_emu/hw_emu.xsa ./outputs/vck190_power1_hw_emu.xsa
 set_property platform.board_id vck190_power1 [current_project]

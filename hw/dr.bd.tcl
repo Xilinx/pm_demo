@@ -321,17 +321,15 @@ update_ip_catalog -rebuild
 
 
 ############################### Added from PM Demo Project #############################################
-#set POWER_0 [ create_bd_cell -type ip -vlnv user.org:user:power POWER_0 ] 
-set POWER_0 [ create_bd_cell -type ip -vlnv user.org:user:power:1.0 POWER_0]
+set POWER_0 [ create_bd_cell -type ip -vlnv user.org:user:power POWER_0]
 startgroup
 set_property -dict [list \
-  CONFIG.NUM_LOGIC_BLOCKS {12} \
-  CONFIG.NUM_RAMB_18_DC {3} \
-  CONFIG.NUM_RAMB_36_DC {4} \
-  CONFIG.Numbr_of_DSP {3} \
+  CONFIG.NUM_LOGIC_BLOCKS {1200} \
+  CONFIG.NUM_RAMB_18_DC {30} \
+  CONFIG.NUM_RAMB_36_DC {40} \
+  CONFIG.Numbr_of_DSP {30} \
 ] [get_bd_cells POWER_0]
 endgroup
-#connect_bd_net -net CLK_WIZ_EVE_0_clk_out1_POWER_0_clk [get_bd_pins CLK_WIZ_EVE_0/clk_out1] [get_bd_pins POWER_0/system_clk]
 #########################################################################################################
 
 
@@ -1416,7 +1414,7 @@ set_property -dict [list \
     CONFIG.NUM_MI {4} \
     CONFIG.NUM_SI {1} \
     ] $icn_ctrl_0
-  
+
 #  set axi_intc_cascaded_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc axi_intc_cascaded_1 ]
 #  set_property -dict [ list \
 #    CONFIG.C_IRQ_CONNECTION {1} \
@@ -1626,13 +1624,13 @@ set_property -dict [list \
 
   # Create port connections
   connect_bd_net -net CIPS_0_pl_clk0 [get_bd_pins CIPS_0/pl0_ref_clk] [get_bd_pins clk_wizard_1/clk_in1]
-  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins dfx_decoupler/s_intf_4_RST] [get_bd_pins IsoReset/peripheral_aresetn]  [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn] 
+  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins dfx_decoupler/s_intf_4_RST] [get_bd_pins IsoReset/peripheral_aresetn]  [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn]
   connect_bd_net -net ps_cips_fpd_axi_noc_axi0_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk4]
   connect_bd_net -net ps_cips_fpd_axi_noc_axi1_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi1_clk] [get_bd_pins ps_noc/aclk5]
   connect_bd_net -net ps_cips_lpd_axi_noc_clk [get_bd_pins CIPS_0/lpd_axi_noc_clk] [get_bd_pins ps_noc/aclk6]
   connect_bd_net -net ps_cips_pl0_resetn [get_bd_pins IsoReset/ext_reset_in] [get_bd_pins CIPS_0/pl0_resetn] [get_bd_pins clk_wizard_1/resetn]
   connect_bd_net -net clk_wizard_1_locked [get_bd_pins clk_wizard_1/locked] [get_bd_pins IsoReset/dcm_locked]
-  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins dfx_decoupler/s_intf_3_CLK] [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1]  [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk]  
+  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins dfx_decoupler/s_intf_3_CLK] [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1]  [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk]
   connect_bd_net -net ps_cips_pmc_axi_noc_axi0_clk [get_bd_pins CIPS_0/pmc_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk7]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi0_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi0_clk] [get_bd_pins ps_noc/aclk0]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi1_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi1_clk] [get_bd_pins ps_noc/aclk1]

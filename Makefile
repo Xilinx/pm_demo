@@ -136,18 +136,15 @@ endif
 	cp -rfv static_files		../../$(IMAGE_DIR) && \
 	cp -fv $(BASE_PDI).rcdo		../../$(IMAGE_DIR) && \
 	cp -fv $(BASE_PDI).rnpi		../../$(IMAGE_DIR) && \
-	cp -rfv *.xsa				../../$(IMAGE_DIR) && \
-	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o \
-		../../$(IMAGE_DIR)/greybox.pdi && \
-	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi \
-		../../$(IMAGE_DIR)/partial.pdi
+	cp -rfv *.xsa				../../$(IMAGE_DIR)
+
 
 .PHONY: platform
 platform:
 	@echo $(BOARD)
 	mkdir -p $(BUILD_DIR)/platforms/$(BOARD)
 	cp -rf platforms/. $(BUILD_DIR)/platforms/$(BOARD)/.
-	make -C $(BUILD_DIR)/platforms/$(BOARD)
+	make -C $(BUILD_DIR)/platforms/$(BOARD) BOARD=$(BOARD)
 
 .PHONY: overlay
 overlay:
