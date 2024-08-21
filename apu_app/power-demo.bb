@@ -13,6 +13,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 #FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
 SRC_URI = "file://power-demo \
+		file://pl.dtbo \
 		file://partial.pdi \
 		file://greybox.pdi \
 		file://aie-matrix-multiplication \
@@ -31,6 +32,7 @@ do_install() {
 	echo "D: ${D}"
 	echo "S: ${S}"
 	install -d ${D}${bindir}
+	install -m 0755 ${S}/pl.dtbo                            ${D}/${bindir}
 	install -m 0755 ${S}/partial.pdi                        ${D}/${bindir}
 	install -m 0755 ${S}/greybox.pdi                        ${D}/${bindir}
 	install -m 0755 ${S}/aie-matrix-multiplication          ${D}/${bindir}

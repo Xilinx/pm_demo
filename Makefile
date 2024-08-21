@@ -12,11 +12,12 @@ BOARD     = vck190
 DEVICE    = xcvc1902
 PLATFORM  = versal
 PLATFORM_NAME  = versal-vck190
-BUILD_DIR = build
-IMAGE_DIR = images.$(BOARD)
+BUILD_DIR = $(realpath .)/build
+IMAGE_DIR = $(BUILD_DIR)/images.$(BOARD)
 HW_PREFIX = xilinx-$(BOARD)
-HW_XSA    = ../images.$(BOARD)/$(BOARD)_power1.xsa
-VER              ?= 202410.1
+HW_XSA    = $(IMAGE_DIR)/$(BOARD)_power1.xsa
+VER       ?= 202410.1
+
 # Set paths from environment variables
 PLNX_BSP      = $(PETALINUX_BSP)
 PLNX_SETTINGS = $(PETALINUX_SETTINGS)
@@ -28,7 +29,7 @@ BASE_PDI    = $(BOARD)_base_wrapper_out
 PARTIAL_PDI = $(BOARD)_base_wrapper_out_pblock_slot0_partial
 
 SHELL := /bin/bash
-CURDIR = $(shell pwd)
+
 
 # Set paths if environment variables empty
 INSTALL_DIR   = /proj/petalinux/$(RELEASE)/petalinux-v$(RELEASE)_daily_latest
@@ -75,7 +76,7 @@ help:
 	@echo 'Usage:'
 	@echo ''
 	@echo '  make'
-	@echo '    hw_design petalinux platform overlay xgemm rpu_app boot_image'
+	@echo '    hw_design platform overlay xgemm petalinux rpu_app boot_image'
 	@echo ''
 	@echo '  make hw_design [BOARD=vck190|vmk180]'
 	@echo '    Generate extensible xsa for board'
@@ -121,7 +122,7 @@ ifeq ($(BOARD),zcu102)
 	echo "No special design, using petalinux included hardware design"
 	exit 0
 endif
-	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
+	mkdir -p $(IMAGE_DIR)
 	cp -af hw/. $(BUILD_DIR)/hwflow_$(BOARD)_power1
 
 	cd $(BUILD_DIR)/hwflow_$(BOARD)_power1 && \
@@ -132,12 +133,11 @@ endif
 	vivado -mode batch -source main.tcl -tclargs $(PLATFORM_NAME) $(VER) && \
 	cd outputs && \
 	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(PARTIAL_PDI).bif && \
-	cp -rfv gen_files		../../$(IMAGE_DIR) && \
-	cp -rfv static_files		../../$(IMAGE_DIR) && \
-	cp -fv $(BASE_PDI).rcdo		../../$(IMAGE_DIR) && \
-	cp -fv $(BASE_PDI).rnpi		../../$(IMAGE_DIR) && \
-	cp -rfv *.xsa				../../$(IMAGE_DIR)
-
+	cp -rfv gen_files static_files	$(IMAGE_DIR) && \
+	cp -rfv $(BASE_PDI).r*		$(IMAGE_DIR) && \
+	cp -rfv *.xsa				$(HW_XSA) && \
+	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o $(IMAGE_DIR)/greybox.pdi && \
+	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi $(IMAGE_DIR)/partial.pdi
 
 .PHONY: platform
 platform:
@@ -149,12 +149,12 @@ platform:
 .PHONY: overlay
 overlay:
 	cp -rf overlays $(BUILD_DIR)
-	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(CURDIR)/$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
+	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
 
 .PHONY: overlay_auto
 overlay_auto:
 	cp -rf overlays $(BUILD_DIR)
-	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal_auto BOARD=$(BOARD) PLATFORM=$(CURDIR)/$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
+	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal_auto BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
 
 #### Build petalinux
 .PHONY: petalinux
@@ -164,7 +164,7 @@ petalinux:
 	echo $(PLNX_BSP)
 	echo $(PLNX_SETTINGS)
 
-	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
+	mkdir -p $(IMAGE_DIR)
 
 ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	cd $(BUILD_DIR) && \
@@ -182,30 +182,31 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	petalinux-config --silentconfig && \
 	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ && \
 	petalinux-create -t apps --template install --name power-demo --enable && \
+	cp -fv ../../apu_app/pl.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power_demo.sh	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
-	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv ../$(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
+	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv $(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
 	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || \
-		cp -rfv ../$(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
+		cp -rfv $(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
 endif
 	. $(PLNX_SETTINGS) && \
+	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(IMAGE_DIR)/gen_files && \
+	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(IMAGE_DIR)/static_files && \
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
 	petalinux-build && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)/gen_files && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)/static_files && \
 	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}	\
-			../$(IMAGE_DIR) && \
+			$(IMAGE_DIR) && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -fv images/linux/plm.elf \
-			../$(IMAGE_DIR)/gen_files && \
+			$(IMAGE_DIR)/gen_files && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -fv images/linux/psmfw.elf \
-			../$(IMAGE_DIR)/static_files && \
+			$(IMAGE_DIR)/static_files && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/system-default.dtb \
-			../$(IMAGE_DIR)/system.dtb && \
+			$(IMAGE_DIR)/system.dtb && \
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv hardware/$(HW_PREFIX)-$(REL)/outputs/project_1.xsa \
-			../$(IMAGE_DIR)/zcu102_power1.xsa && \
+			$(IMAGE_DIR)/zcu102_power1.xsa && \
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb} \
-			../$(IMAGE_DIR)
+			$(IMAGE_DIR)
 
 
 #### Build AIE application (uses XSA from above builds)
@@ -220,10 +221,15 @@ endif
 	echo $(PLNX_BSP)
 	echo $(PLNX_SETTINGS)
 
-	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
+	mkdir -p $(IMAGE_DIR)
 	mkdir -p $(BUILD_DIR)/$@
-	cp -rf apu_app/xgemm $(BUILD_DIR)
+	cp -rf apu_app/$@ $(BUILD_DIR)
 
+	. $(VITS_SETTINGS) && \
+	. $(PLNX_SETTINGS) && \
+	cd $(BUILD_DIR)/$@ && \
+	./build.sh
+	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication* $(IMAGE_DIR)
 
 
 #### Build RPU application (uses XSA from above builds)
@@ -232,7 +238,7 @@ rpu_app:
 	echo $(REL)
 	echo $(VITS_SETTINGS)
 
-	mkdir -p $(BUILD_DIR)/$(IMAGE_DIR)
+	mkdir -p $(IMAGE_DIR)
 	mkdir -p $(BUILD_DIR)/$@
 ifeq ($(wildcard $(BUILD_DIR)/rpu_app/.*),)
 	. $(VITS_SETTINGS) && \
@@ -244,27 +250,23 @@ else
 	cd $(BUILD_DIR)/$@ && \
 	make $@
 endif
-	cp -fv $(BUILD_DIR)/$@/$@/Debug/$@.elf $(BUILD_DIR)/$(IMAGE_DIR)
+	cp -fv $(BUILD_DIR)/$@/$@/Debug/$@.elf $(IMAGE_DIR)
 
 
 #### Build Boot Image
 .PHONY: boot_image
 boot_image:
 	echo $(REL)
-	echo $(HW_PREFIX)
-	echo $(PLNX_SETTINGS)
 	echo $(VITS_SETTINGS)
 
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv boards/$(BOARD)/$(BOARD)_board_topology.cdo \
-			$(BUILD_DIR)/$(IMAGE_DIR)
+			$(IMAGE_DIR)
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv boards/$(BOARD)/boot.tcl \
-			$(BUILD_DIR)/$(IMAGE_DIR)
-	cp -rfv boards/$(BOARD)/$(BOARD)_boot.bif \
-			$(BUILD_DIR)/$(IMAGE_DIR)
+			$(IMAGE_DIR)
+	cp -rfv boards/$(BOARD)/$(BOARD)_boot.bif $(IMAGE_DIR)
 
-	cd $(BUILD_DIR)/$(IMAGE_DIR) && \
+	cd $(IMAGE_DIR) && \
 	. $(VITS_SETTINGS) && \
-	. $(PLNX_SETTINGS) && \
 	bootgen -arch $(PLATFORM) -image $(BOARD)_boot.bif -w -o BOOT.BIN
 
 #### Build SD Card Image
@@ -272,14 +274,12 @@ boot_image:
 sd_image:
 	echo $(REL)
 	echo $(HW_PREFIX)
-	echo $(PLNX_SETTINGS)
 	echo $(VITS_SETTINGS)
 
 	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
-	cp -fv images/linux/rootfs.tar.gz ../$(IMAGE_DIR) && \
+	cp -fv images/linux/rootfs.tar.gz $(IMAGE_DIR) && \
 	. $(VITS_SETTINGS) && \
-	. $(PLNX_SETTINGS) && \
-	petalinux-package --wic -i ../images -o ../$(IMAGE_DIR) -r ../$(IMAGE_DIR) -b \
+	petalinux-package --wic -i ../images -o $(IMAGE_DIR) -r $(IMAGE_DIR) -b \
 		"BOOT.BIN system.dtb Image rootfs.tar.gz"
 
 # Start docker interactive shell
