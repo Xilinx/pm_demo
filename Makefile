@@ -150,11 +150,37 @@ platform:
 overlay:
 	cp -rf overlays $(BUILD_DIR)
 	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
+	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/aie_matrix_multiplication.xclbin \
+		$(IMAGE_DIR)/aie-matrix-multiplication.xclbin
+	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/BOOT.BIN \
+		$(IMAGE_DIR)/partial.pdi
 
 .PHONY: overlay_auto
 overlay_auto:
 	cp -rf overlays $(BUILD_DIR)
 	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal_auto BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
+
+#### Build AIE application (uses XSA from above builds)
+.PHONY: xgemm
+xgemm:
+ifneq ($(BOARD),vck190)
+	echo "No AIE in the device"
+	exit 0
+endif
+	echo $(REL)
+	echo $(VITS_SETTINGS)
+	echo $(PLNX_BSP)
+	echo $(PLNX_SETTINGS)
+
+	mkdir -p $(IMAGE_DIR)
+	mkdir -p $(BUILD_DIR)/$@
+	cp -rf apu_app/$@ $(BUILD_DIR)
+
+	. $(VITS_SETTINGS) && \
+	. $(PLNX_SETTINGS) && \
+	cd $(BUILD_DIR)/$@ && \
+	./build.sh
+	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication $(IMAGE_DIR)
 
 #### Build petalinux
 .PHONY: petalinux
@@ -207,29 +233,6 @@ endif
 			$(IMAGE_DIR)/zcu102_power1.xsa && \
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb} \
 			$(IMAGE_DIR)
-
-
-#### Build AIE application (uses XSA from above builds)
-.PHONY: xgemm
-xgemm:
-ifneq ($(BOARD),vck190)
-	echo "No AIE in the device"
-	exit 0
-endif
-	echo $(REL)
-	echo $(VITS_SETTINGS)
-	echo $(PLNX_BSP)
-	echo $(PLNX_SETTINGS)
-
-	mkdir -p $(IMAGE_DIR)
-	mkdir -p $(BUILD_DIR)/$@
-	cp -rf apu_app/$@ $(BUILD_DIR)
-
-	. $(VITS_SETTINGS) && \
-	. $(PLNX_SETTINGS) && \
-	cd $(BUILD_DIR)/$@ && \
-	./build.sh
-	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication* $(IMAGE_DIR)
 
 
 #### Build RPU application (uses XSA from above builds)
