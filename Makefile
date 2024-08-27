@@ -135,7 +135,8 @@ endif
 	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(PARTIAL_PDI).bif && \
 	cp -rfv gen_files static_files	$(IMAGE_DIR) && \
 	cp -rfv $(BASE_PDI).r*		$(IMAGE_DIR) && \
-	cp -rfv *.xsa				$(HW_XSA) && \
+	cp -rfv *.xsa				$(IMAGE_DIR) && \
+	mv -fv $(IMAGE_DIR)/$(BOARD)_power1_static.xsa	$(HW_XSA) && \
 	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o $(IMAGE_DIR)/greybox.pdi && \
 	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi $(IMAGE_DIR)/partial.pdi
 
