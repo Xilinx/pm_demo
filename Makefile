@@ -143,23 +143,23 @@ endif
 .PHONY: platform
 platform:
 	@echo $(BOARD)
+	@echo $(VITS_SETTINGS)
 	mkdir -p $(BUILD_DIR)/platforms/$(BOARD)
 	cp -rf platforms/. $(BUILD_DIR)/platforms/$(BOARD)/.
+	. $(VITS_SETTINGS) && \
 	make -C $(BUILD_DIR)/platforms/$(BOARD) BOARD=$(BOARD)
 
 .PHONY: overlay
 overlay:
+	@echo $(BOARD)
+	@echo $(VITS_SETTINGS)
 	cp -rf overlays $(BUILD_DIR)
+	. $(VITS_SETTINGS) && \
 	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
 	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/aie_matrix_multiplication.xclbin \
 		$(IMAGE_DIR)/aie-matrix-multiplication.xclbin
 	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/BOOT.BIN \
 		$(IMAGE_DIR)/partial.pdi
-
-.PHONY: overlay_auto
-overlay_auto:
-	cp -rf overlays $(BUILD_DIR)
-	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal_auto BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
 
 #### Build AIE application (uses XSA from above builds)
 .PHONY: xgemm
