@@ -4,7 +4,7 @@
 ###############################################################################
 
 # Release version
-RELEASE = 2024.1
+RELEASE = 2024.2
 
 
 # Device, Targets, Dirs, XSA...
@@ -16,7 +16,7 @@ BUILD_DIR = $(realpath .)/build
 IMAGE_DIR = $(BUILD_DIR)/images.$(BOARD)
 HW_PREFIX = xilinx-$(BOARD)
 HW_XSA    = $(IMAGE_DIR)/$(BOARD)_power1.xsa
-VER       ?= 202410.1
+VER       ?= 202420.1
 
 # Set paths from environment variables
 PLNX_BSP      = $(PETALINUX_BSP)
@@ -66,7 +66,7 @@ else
 endif
 
 #### Build all
-all: hw_design platform overlay xgemm petalinux rpu_app boot_image
+all: hw_design platform overlay sdt xgemm petalinux rpu_app boot_image
 .PHONY: all
 
 
@@ -183,7 +183,26 @@ endif
 	./build.sh
 	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication $(IMAGE_DIR)
 
+#### Build SDT
+#sdtgen set_dt_param -board_dts MACHINE_NAME;
+.PHONY: sdt
+sdt:
+	echo $(REL)
+	echo $(HW_XSA)
+	echo $(VITS_SETTINGS)
+
+	rm -rf $(BUILD_DIR)/$@
+	mkdir -p $(BUILD_DIR)/$@
+	. $(VITS_SETTINGS) && \
+	xsct -eval "setws .; \
+	sdtgen set_dt_param \
+		-xsa $(HW_XSA) \
+		-dir $(BUILD_DIR)/$@ \
+		-repo /proj/xbuilds/2024.2_daily_latest/installs/lin64/Vitis/2024.2/data/system-device-tree-xlnx; \
+	sdtgen generate_sdt"
+
 #### Build petalinux
+#	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ 
 .PHONY: petalinux
 petalinux:
 	echo $(REL)
@@ -198,6 +217,7 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	. $(PLNX_SETTINGS) && \
 	petalinux-create -t project -s $(PLNX_BSP) && \
 	cd $(HW_PREFIX)-$(REL) && \
+	petalinux-config --get-hw-description ../sdt/system-top.dts &&\
 	$ [[ $(BOARD) = zcu102 ]] || cp $(HW_XSA) . && \
 	cp ../../boards/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
@@ -207,7 +227,6 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || sed -i -E 's/.*CONFIG_xrt.+/CONFIG_xrt=y/' project-spec/configs/rootfs_config && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/.*CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS.+/CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS=\"-DFSBL_A53_TCM_ECC_EXCLUDE_VAL=0\"/' project-spec/configs/config && \
 	petalinux-config --silentconfig && \
-	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ && \
 	petalinux-create -t apps --template install --name power-demo --enable && \
 	cp -fv ../../apu_app/pl.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power_demo.sh	project-spec/meta-user/recipes-apps/power-demo/files && \
