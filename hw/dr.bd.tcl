@@ -1429,8 +1429,20 @@ set_property -dict [list \
 #    CONFIG.C_EN_CASCADE_MODE {1} \
 #    ] $axi_intc_parent
 
-  set dfx_decoupler [create_bd_cell -type ip -vlnv xilinx.com:ip:dfx_decoupler:1.0 dfx_decoupler]
-  set_property -dict [list CONFIG.ALL_PARAMS {HAS_SIGNAL_CONTROL 0 HAS_SIGNAL_STATUS 0 HAS_AXI_LITE 1 INTF {intf_0 {ID 0 VLNV xilinx.com:interface:aximm_rtl:1.0 MODE slave}  intf_3 {ID 1 VLNV xilinx.com:signal:clock_rtl:1.0 MODE slave} intf_4 {ID 2 VLNV xilinx.com:signal:reset_rtl:1.0 MODE slave}}}] $dfx_decoupler
+  set dfx_decoupler [create_bd_cell -type ip -vlnv xilinx.com:ip:dfx_decoupler dfx_decoupler]
+  set_property -dict [list \
+    CONFIG.ALL_PARAMS \
+      { \
+        HAS_SIGNAL_CONTROL 0 \
+        HAS_SIGNAL_STATUS 0 \
+        HAS_AXI_LITE 1 INTF { \
+          intf_0 {ID 0 VLNV xilinx.com:interface:aximm_rtl:1.0 \
+            MODE slave \
+            PROTOCOL AXI4 \
+          } \
+        } \
+      } \
+  ] $dfx_decoupler
 
   # Create instance: ps_noc, and set properties
   set ps_noc [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_noc ps_noc ]
@@ -1624,20 +1636,22 @@ set_property -dict [list \
 
   # Create port connections
   connect_bd_net -net CIPS_0_pl_clk0 [get_bd_pins CIPS_0/pl0_ref_clk] [get_bd_pins clk_wizard_1/clk_in1]
-  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins dfx_decoupler/s_intf_4_RST] [get_bd_pins IsoReset/peripheral_aresetn]  [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn]
+  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins IsoReset/peripheral_aresetn]  [get_bd_pins icn_ctrl_0/aresetn] [get_bd_pins dfx_decoupler/intf_0_arstn] [get_bd_pins dfx_decoupler/s_axi_reg_aresetn]
   connect_bd_net -net ps_cips_fpd_axi_noc_axi0_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk4]
   connect_bd_net -net ps_cips_fpd_axi_noc_axi1_clk [get_bd_pins CIPS_0/fpd_axi_noc_axi1_clk] [get_bd_pins ps_noc/aclk5]
   connect_bd_net -net ps_cips_lpd_axi_noc_clk [get_bd_pins CIPS_0/lpd_axi_noc_clk] [get_bd_pins ps_noc/aclk6]
   connect_bd_net -net ps_cips_pl0_resetn [get_bd_pins IsoReset/ext_reset_in] [get_bd_pins CIPS_0/pl0_resetn] [get_bd_pins clk_wizard_1/resetn]
   connect_bd_net -net clk_wizard_1_locked [get_bd_pins clk_wizard_1/locked] [get_bd_pins IsoReset/dcm_locked]
-  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins dfx_decoupler/s_intf_3_CLK] [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1]  [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk]
+  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins IsoReset/slowest_sync_clk] [get_bd_pins CIPS_0/m_axi_fpd_aclk] [get_bd_pins clk_wizard_1/clk_out1]  [get_bd_pins icn_ctrl_0/aclk] [get_bd_pins dfx_decoupler/intf_0_aclk] [get_bd_pins dfx_decoupler/aclk]
   connect_bd_net -net ps_cips_pmc_axi_noc_axi0_clk [get_bd_pins CIPS_0/pmc_axi_noc_axi0_clk] [get_bd_pins ps_noc/aclk7]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi0_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi0_clk] [get_bd_pins ps_noc/aclk0]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi1_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi1_clk] [get_bd_pins ps_noc/aclk1]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi2_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi2_clk] [get_bd_pins ps_noc/aclk2]
   connect_bd_net -net ps_cips_ps_ps_noc_cci_axi3_clk [get_bd_pins CIPS_0/fpd_cci_noc_axi3_clk] [get_bd_pins ps_noc/aclk3]
-  connect_bd_net -net dfx_decoupler_clk_out [get_bd_pins dfx_decoupler/rp_intf_3_CLK] [get_bd_pins slot0/ExtClk]
-  connect_bd_net -net dfx_decoupler_reset_out [get_bd_pins dfx_decoupler/rp_intf_4_RST] [get_bd_pins slot0/ExtReset]
+#  connect_bd_net -net dfx_decoupler_clk_out [get_bd_pins dfx_decoupler/rp_intf_3_CLK] [get_bd_pins slot0/ExtClk]
+#  connect_bd_net -net dfx_decoupler_reset_out [get_bd_pins dfx_decoupler/rp_intf_4_RST] [get_bd_pins slot0/ExtReset]
+  connect_bd_net -net clk_wizard_1_clk_out1 [get_bd_pins slot0/ExtClk] [get_bd_pins clk_wizard_1/clk_out1]
+  connect_bd_net -net CtrlReset_peripheral_aresetn [get_bd_pins slot0/ExtReset] [get_bd_pins IsoReset/peripheral_aresetn]
 
   # Create address segments
  # assign_bd_address -offset 0xA4000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces CIPS_0/M_AXI_FPD] [get_bd_addr_segs axi_intc_cascaded_1/S_AXI/Reg] -force
