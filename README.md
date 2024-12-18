@@ -53,11 +53,11 @@ following tools installed and follow the [build instructions](#2-build-instructi
 ### 2. Build Instructions
 ```
 Defaults:
- RELEASE=2024.1
+ RELEASE=2024.2
  BOARD=vck190
- PETALINUX_BSP=/proj/petalinux/2024.1/petalinux-v2024.1_daily_latest/bsp/release/xilinx-vck190-v2024.1-final.bsp
- PETALINUX_SETTINGS=/proj/petalinux/2024.1/petalinux-v2024.1_daily_latest/tool/petalinux-v2024.1-final/settings.sh
- VITIS_SETTINGS=/proj/xbuilds/2024.1_daily_latest/installs/lin64/Vitis/2024.1/settings64.sh
+ PETALINUX_BSP=/proj/petalinux/2024.2/petalinux-v2024.2_daily_latest/bsp/release/xilinx-vck190-v2024.2-final.bsp
+ PETALINUX_SETTINGS=/proj/petalinux/2024.2/petalinux-v2024.2_daily_latest/tool/petalinux-v2024.2-final/settings.sh
+ VITIS_SETTINGS=/proj/xbuilds/2024.2_daily_latest/installs/lin64/Vitis/2024.2/settings64.sh
  Note: Change Makefile variable RELEASE=202x.x to build for a different release version.
 ```
 Vitis and PetaLinux tools need to be installed before building any design.
@@ -77,6 +77,7 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 - `make BOARD=[vck190|vmk180|zcu102]`
     or
 - `make hw_design BOARD=[vck190|vmk180]`
+- `make xgemm BOARD=[vck190]`
 - `make petalinux BOARD=[vck190|vmk180|zcu102]`
 - `make rpu_app BOARD=[vck190|vmk180|zcu102]`
 - `make boot_image BOARD=[vck190|vmk180|zcu102]`
@@ -84,69 +85,45 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 ### 3. Directory Structure
 ```
 .pm_demo
-├── apu_app - APU application
-│   ├── power-demo.bb - power demo binary files bitbake
-│   └── power_demo.sh - power demo script
+├── apu_app - APU
+│   └── xgemm - AIE application
+│       ├── designs
+│       │   └── xgemm-gmio
+│       │       ├── aie
+│       │       │   └── kernels
+│       │       ├── hw
+│       │       ├── ps
+│       │       │   └── linux
+│       │       └── sw
+│       └── platforms
+├── boards
+│   ├── vck190
+│   ├── vmk180
+│   └── zcu102
 ├─ build - Build artifacts
 │   ├─ ...
 │   └─ images.(BOARD) - Contains all build images
-├── boards
-│   ├── vck190
-│   │   ├── vck190_board_topology.cdo
-│   │   └── vck190_boot.bif - BOOT.BIN, boot information file
-│   ├── vmk180
-│   │   ├── vmk180_board_topology.cdo
-│   │   └── vmk180_boot.bif - BOOT.BIN, boot information file
-│   ├── zcu102
-│   │   ├── boot.tcl        - xsdb source this file for jtag boot
-│   │   └── zcu102_boot.bif - BOOT.BIN, boot information file
-│   └── uboot-env.vars
-├── hw   - Hardware design
+├── hw
 │   ├── ip
 │   │   ├── bufg_ctrl
 │   │   │   ├── src
-│   │   │   │   └── bufg_ctrl.v
-│   │   │   ├── xgui
-│   │   │   │   └── bufg_ctrl_v1_0.tcl
-│   │   │   └── component.xml
+│   │   │   └── xgui
 │   │   └── power
-│   │       ├── src
-│   │       │   ├── vio_bram
-│   │       │   │   └── vio_bram.xci
-│   │       │   ├── vio_top_logic
-│   │       │   │   └── vio_top_logic.xci
-│   │       │   ├── block_ram_daisy_chain.v
-│   │       │   ├── generate_sfir.v
-│   │       │   ├── logic_top.v
-│   │       │   ├── logic.v
-│   │       │   └── power.v
-│   │       ├── xgui
-│   │       │   └── power_v1_0.tcl
-│   │       └── component.xml
-│   ├── xdc
-│   │   ├── qor_scripts
-│   │   │   └── prohibit_select_bli_bels_for_hold.tcl
-│   │   ├── default.xdc
-│   │   ├── pblock.xdc
-│   │   ├── pl_clk_uncertainty.xdc
-│   │   ├── vck190_ddr4single_dimm1.xdc
-│   │   └── vck190.xdc
-│   ├── dr.bd.tcl
-│   ├── main.tcl
-│   ├── pfm_decls.tcl
-│   └── project.tcl
-├── rpu_app - RPU application
-│   ├── gic_setup.c
-│   ├── gic_setup.h
-│   ├── ipi.c
-│   ├── ipi.h
-│   ├── lscript.ld - Linker script
-│   ├── main.c
-│   ├── Makefile
-│   ├── pm_init.c
-│   ├── pm_init.h
-│   ├── rtc.c
-│   └── rtc.h
+│   │       ├── src
+│   │       │   ├── vio_bram
+│   │       │   └── vio_top_logic
+│   │       └── xgui
+│   └── xdc
+│       └── qor_scripts
+├── overlays
+│   ├── matrix_mul_thermal
+│   │   └── aie
+│   │       └── kernels
+│   └── matrix_mul_thermal_auto
+│       └── aie
+│           └── kernels
+├── platforms
+└── rpu_app - RPU application
 ├── Dockerfile
 ├── LICENSE
 ├── Makefile
@@ -213,8 +190,10 @@ Latency:
 ## 6. Glossary
 | Name| Description					|
 | :---| :-------------------------- |
+| AIE | Adaptable Intelligent Engine|
 | APU | Application Processing Unit |
 | FPD | Full Power Domain 			|
+| LPD | Low Power Domain 			|
 | RPU | Realtime Processing Unit	|
 | PL  | Programmable Logic			|
 | PLD | Programmable Logic Domain	|

@@ -7,8 +7,6 @@
 
 echo "${PWD}"
 export XILINXD_LICENSE_FILE=2100@aiengine-eng
-unset SYSROOT
-export SYSROOT=/proj/xbuilds/2024.2_daily_latest/internal_platforms/sw/versal/xilinx-versal-common-v2024.2/sysroots/cortexa72-cortexa53-xilinx-linux/
 export PFMS_DIR=${PWD}/platforms
 export BASE_PLATFORM=${PFMS_DIR}/base
 source settings.sh

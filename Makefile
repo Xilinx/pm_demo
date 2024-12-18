@@ -126,9 +126,6 @@ endif
 	cp -af hw/. $(BUILD_DIR)/hwflow_$(BOARD)_power1
 
 	cd $(BUILD_DIR)/hwflow_$(BOARD)_power1 && \
-	$ [[ $(BOARD) = vck190 ]] || mv xdc/vck190.xdc xdc/$(BOARD).xdc && \
-	$ [[ $(BOARD) = vck190 ]] || find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/vck190/vmk180/g' && \
-	$ [[ $(BOARD) = vck190 ]] || find . \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i 's/vc1902/vm1802/g' && \
 	. $(VITS_SETTINGS) && \
 	vivado -mode batch -source main.tcl -tclargs $(PLATFORM_NAME) $(VER) && \
 	cd outputs && \
@@ -142,6 +139,10 @@ endif
 
 .PHONY: platform
 platform:
+ifneq ($(BOARD),vck190)
+	echo "No AIE in the device"
+	exit 0
+endif
 	@echo $(BOARD)
 	@echo $(VITS_SETTINGS)
 	mkdir -p $(BUILD_DIR)/platforms/$(BOARD)
@@ -151,6 +152,10 @@ platform:
 
 .PHONY: overlay
 overlay:
+ifneq ($(BOARD),vck190)
+	echo "No AIE in the device"
+	exit 0
+endif
 	@echo $(BOARD)
 	@echo $(VITS_SETTINGS)
 	cp -rf overlays $(BUILD_DIR)
@@ -180,6 +185,8 @@ endif
 	. $(VITS_SETTINGS) && \
 	. $(PLNX_SETTINGS) && \
 	cd $(BUILD_DIR)/$@ && \
+	unset SYSROOT && \
+	export SYSROOT=/proj/xbuilds/$(RELEASE)_daily_latest/internal_platforms/sw/versal/xilinx-versal-common-v$(RELEASE)/sysroots/cortexa72-cortexa53-xilinx-linux/ && \
 	./build.sh
 	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication $(IMAGE_DIR)
 
@@ -198,7 +205,7 @@ sdt:
 	sdtgen set_dt_param \
 		-xsa $(HW_XSA) \
 		-dir $(BUILD_DIR)/$@ \
-		-repo /proj/xbuilds/2024.2_daily_latest/installs/lin64/Vitis/2024.2/data/system-device-tree-xlnx; \
+		/proj/xbuilds/$(RELEASE)_daily_latest/installs/lin64/Vitis/2024.2/data/system-device-tree-xlnx; \
 	sdtgen generate_sdt"
 
 #### Build petalinux
@@ -228,7 +235,7 @@ ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/.*CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS.+/CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS=\"-DFSBL_A53_TCM_ECC_EXCLUDE_VAL=0\"/' project-spec/configs/config && \
 	petalinux-config --silentconfig && \
 	petalinux-create -t apps --template install --name power-demo --enable && \
-	cp -fv ../../apu_app/pl.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
+	cp -fv ../../apu_app/aie.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power_demo.sh	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv $(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \

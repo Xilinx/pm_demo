@@ -274,6 +274,7 @@ int main(int argc, char ** argv)
 	}
 
 #if !defined(__AIESIM__) && !defined(__ADF_FRONTEND__) && !defined(__AIEBAREMETAL__)
+	xrtAIEResetArray(dhdl);
 	xrtDeviceClose(dhdl);
 #endif
 
