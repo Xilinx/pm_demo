@@ -711,7 +711,7 @@ set_property -dict [list \
     PMC_GPIO_EMIO_WIDTH_HDL {64} \
     PMC_HSM0_CLK_ENABLE {1} \
     PMC_HSM1_CLK_ENABLE {1} \
-    PMC_I2CPMC_PERIPHERAL {{ENABLE 1} {IO EMIO}} \
+    PMC_I2CPMC_PERIPHERAL {{ENABLE 1} {IO {PMC_MIO 46 .. 47}}} \
     PMC_MIO0 {{AUX_IO 0} {DIRECTION out} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
     PMC_MIO1 {{AUX_IO 0} {DIRECTION inout} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
     PMC_MIO10 {{AUX_IO 0} {DIRECTION inout} {DRIVE_STRENGTH 12mA} {OUTPUT_DATA default} {PULL pullup} {SCHMITT 1} {SLEW slow} {USAGE Reserved}} \
@@ -805,7 +805,7 @@ set_property -dict [list \
     PS_A72_LOAD {0.0} \
     PS_BANK_2_IO_STANDARD {LVCMOS1.8} \
     PS_BANK_3_IO_STANDARD {LVCMOS1.8} \
-    PS_BOARD_INTERFACE {ps_pmc_fixed_io} \
+    PS_BOARD_INTERFACE {Custom} \
     PS_CAN0_CLK {{ENABLE 0} {IO {PMC_MIO 0}}} \
     PS_CAN0_PERIPHERAL {{ENABLE 0} {IO {PMC_MIO 8 .. 9}}} \
     PS_CAN1_CLK {{ENABLE 0} {IO {PMC_MIO 0}}} \
@@ -949,7 +949,7 @@ set_property -dict [list \
     PS_FTM_CTI_OUT2 {0} \
     PS_FTM_CTI_OUT3 {0} \
     PS_GEM0_COHERENCY {0} \
-    PS_GEM0_ROUTE_THROUGH_FPD {0} \
+    PS_GEM0_ROUTE_THROUGH_FPD {1} \
     PS_GEM1_COHERENCY {0} \
     PS_GEM1_ROUTE_THROUGH_FPD {0} \
     PS_GEM_TSU {{ENABLE 0} {IO {PS_MIO 24}}} \
@@ -982,7 +982,7 @@ set_property -dict [list \
     PS_HSDP_INGRESS_TRAFFIC {JTAG} \
     PS_HSDP_MODE {NONE} \
     PS_HSDP_SAME_EGRESS_AS_INGRESS_TRAFFIC {1} \
-    PS_I2C0_PERIPHERAL {{ENABLE 1} {IO {PMC_MIO 46 .. 47}}} \
+    PS_I2C0_PERIPHERAL {{ENABLE 0} {IO {PMC_MIO 46 .. 47}}} \
     PS_I2C1_PERIPHERAL {{ENABLE 1} {IO {PMC_MIO 44 .. 45}}} \
     PS_I2CSYSMON_PERIPHERAL {{ENABLE 0} {IO {PS_MIO 23 .. 24}}} \
     PS_IRQ_USAGE {{CH0 0} {CH1 0} {CH10 0} {CH11 0} {CH12 0} {CH13 0} {CH14 0} {CH15 0} {CH2 0} {CH3 0} {CH4 0} {CH5 0} {CH6 0} {CH7 0} {CH8 0} {CH9 0}} \
@@ -1404,6 +1404,7 @@ set_property -dict [list \
     SUBPRESET1 {Custom} \
     USE_UART0_IN_DEVICE_BOOT {0} \
   } \
+  CONFIG.PS_PMC_CONFIG_APPLIED {1} \
 ] $CIPS_0
 
 
