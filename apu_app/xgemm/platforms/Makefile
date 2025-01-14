@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
-BASE_XSA = ../../images.vck190/vck190_power1_rp_hw.xsa
+BASE_XSA = ../../images/vck190_power1_rp_hw.xsa
 all: create
 
 create: $(BASE_PLATFORM)/export/base/base.xpfm

@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (C) 2023 - 2024, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
@@ -7,14 +7,11 @@
 RELEASE = 2024.2
 
 
-# Device, Targets, Dirs, XSA...
+# Targets, Dirs, XSA...
 BOARD     = vck190
-DEVICE    = xcvc1902
 PLATFORM  = versal
-PLATFORM_NAME  = versal-vck190
-BUILD_DIR = $(realpath .)/build
-IMAGE_DIR = $(BUILD_DIR)/images.$(BOARD)
-HW_PREFIX = xilinx-$(BOARD)
+BUILD_DIR = $(realpath .)/build.$(BOARD)
+IMAGE_DIR = $(BUILD_DIR)/images
 HW_XSA    = $(IMAGE_DIR)/$(BOARD)_power1.xsa
 VER       ?= 202420.1
 
@@ -24,17 +21,17 @@ PLNX_SETTINGS = $(PETALINUX_SETTINGS)
 VITS_SETTINGS = $(VITIS_SETTINGS)
 
 
-# PDIs
-BASE_PDI    = $(BOARD)_base_wrapper_out
-PARTIAL_PDI = $(BOARD)_base_wrapper_out_pblock_slot0_partial
-
 SHELL := /bin/bash
 
+
+ifeq ($(BOARD),zcu102)
+PLATFORM  = zynqmp
+endif
 
 # Set paths if environment variables empty
 INSTALL_DIR   = /proj/petalinux/$(RELEASE)/petalinux-v$(RELEASE)_daily_latest
 ifeq ($(PLNX_BSP),)
-	PLNX_BSP      = $(INSTALL_DIR)/bsp/release/$(HW_PREFIX)-v$(RELEASE)-final.bsp
+	PLNX_BSP      = $(INSTALL_DIR)/bsp/release/xilinx-$(BOARD)-v$(RELEASE)-final.bsp
 endif
 
 ifeq ($(PLNX_SETTINGS),)
@@ -46,24 +43,6 @@ ifeq ($(VITS_SETTINGS),)
 endif
 REL = $(shell expr $(PLNX_SETTINGS) | grep -Eo '([0-9]+)(\.?[0-9]+)*' | head -1)
 
-
-# Set board, device 
-ifeq ($(BOARD),vck190)
-	DEVICE = xcvc1902
-	ifeq ($(shell expr $(REL) \<= 2022.1), 1)
-		DEVICE = s80
-	endif
-else ifeq ($(BOARD),vmk180)
-	DEVICE = xcvm1802
-	ifeq ($(shell expr $(REL) \<= 2022.1), 1)
-		DEVICE = s80
-	endif
-else ifeq ($(BOARD),zcu102)
-	DEVICE = zcu102
-	PLATFORM = zynqmp
-else
-	exit 1
-endif
 
 #### Build all
 all: hw_design platform overlay sdt xgemm petalinux rpu_app boot_image
@@ -81,22 +60,25 @@ help:
 	@echo '  make hw_design [BOARD=vck190|vmk180]'
 	@echo '    Generate extensible xsa for board'
 	@echo ''
-	@echo '  make platform [BOARD=vck190|vmk180]'
+	@echo '  make platform [BOARD=vck190]'
 	@echo '    Generate base platform'
 	@echo ''
-	@echo '  make overlay [BOARD=vck190|vmk180]'
+	@echo '  make overlay [BOARD=vck190]'
 	@echo '    Generate overlay (power + matrix_mul_thermal)'
+	@echo ''
+	@echo '  make xgemm [BOARD=vck190]'
+	@echo '    Build xgemm'
+	@echo ''
+	@echo '  make sdt [BOARD=vck190|vmk180]'
+	@echo '    Build sdt'
 	@echo ''
 	@echo '  make petalinux [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Build linux images'
 	@echo ''
-	@echo '  make xgemm'
-	@echo '    Build xgemm'
-	@echo ''
-	@echo '  make rpu_app'
+	@echo '  make rpu_app [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Build rpu_app'
 	@echo ''
-	@echo '  make boot_image'
+	@echo '  make boot_image [BOARD=vck190|vmk180|zcu102]'
 	@echo '    Generate BOOT.BIN'
 	@echo ''
 	@echo '  Defaults:'
@@ -111,75 +93,61 @@ help:
 #### Build hardware design (vck190 or vmk180)
 .PHONY: hw_design
 hw_design:
-
 	echo $(REL)
-	echo $(DEVICE)
 	echo $(BOARD)
-	echo $(HW_PREFIX)
 	echo $(VITS_SETTINGS)
 
-ifeq ($(BOARD),zcu102)
-	echo "No special design, using petalinux included hardware design"
-	exit 0
-endif
+ifneq ($(BOARD),zcu102)
 	mkdir -p $(IMAGE_DIR)
 	cp -af hw/. $(BUILD_DIR)/hwflow_$(BOARD)_power1
 
 	cd $(BUILD_DIR)/hwflow_$(BOARD)_power1 && \
 	. $(VITS_SETTINGS) && \
-	vivado -mode batch -source main.tcl -tclargs $(PLATFORM_NAME) $(VER) && \
+	vivado -mode batch -source main.tcl -tclargs $(PLATFORM)-$(BOARD) $(VER) && \
 	cd outputs && \
-	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(PARTIAL_PDI).bif && \
+	sed -i -E 's/..\/hwflow_$(BOARD)_power1\/outputs\///' $(BOARD)_base_wrapper_out_pblock_slot0_partial.bif && \
 	cp -rfv gen_files static_files	$(IMAGE_DIR) && \
-	cp -rfv $(BASE_PDI).r*		$(IMAGE_DIR) && \
+	cp -rfv  $(BOARD)_base_wrapper_out.r*	$(IMAGE_DIR) && \
 	cp -rfv *.xsa				$(IMAGE_DIR) && \
 	cp -rfv $(IMAGE_DIR)/$(BOARD)_power1_static.xsa	$(HW_XSA) && \
-	bootgen -arch $(PLATFORM) -image $(PARTIAL_PDI).bif -w -o $(IMAGE_DIR)/greybox.pdi && \
+	bootgen -arch $(PLATFORM) -image $(BOARD)_base_wrapper_out_pblock_slot0_partial.bif -w -o $(IMAGE_DIR)/greybox.pdi && \
 	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi $(IMAGE_DIR)/partial.pdi
+endif
 
 .PHONY: platform
 platform:
-ifneq ($(BOARD),vck190)
-	echo "No AIE in the device"
-	exit 0
-endif
+ifeq ($(BOARD),vck190)
 	@echo $(BOARD)
 	@echo $(VITS_SETTINGS)
-	mkdir -p $(BUILD_DIR)/platforms/$(BOARD)
-	cp -rf platforms/. $(BUILD_DIR)/platforms/$(BOARD)/.
+	cp -rf hw/$@ $(BUILD_DIR)/
 	. $(VITS_SETTINGS) && \
-	make -C $(BUILD_DIR)/platforms/$(BOARD) BOARD=$(BOARD)
+	cd $(BUILD_DIR)/$@ && \
+	make BOARD=$(BOARD)
+endif
 
 .PHONY: overlay
 overlay:
-ifneq ($(BOARD),vck190)
-	echo "No AIE in the device"
-	exit 0
-endif
+ifeq ($(BOARD),vck190)
 	@echo $(BOARD)
 	@echo $(VITS_SETTINGS)
-	cp -rf overlays $(BUILD_DIR)
+	cp -rf hw/$@ $(BUILD_DIR)
+	cd $(BUILD_DIR)/$@ && \
 	. $(VITS_SETTINGS) && \
-	make -C $(BUILD_DIR)/overlays/matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platforms/$(BOARD)/base/base.xpfm
-	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/aie_matrix_multiplication.xclbin \
+	make -C matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platform/base/base.xpfm
+	cp -rfv matrix_mul_thermal/aie_matrix_multiplication.xclbin \
 		$(IMAGE_DIR)/aie-matrix-multiplication.xclbin
-	cp -rfv $(BUILD_DIR)/overlays/matrix_mul_thermal/BOOT.BIN \
+	cp -rfv matrix_mul_thermal/BOOT.BIN \
 		$(IMAGE_DIR)/partial.pdi
+endif
 
 #### Build AIE application (uses XSA from above builds)
 .PHONY: xgemm
 xgemm:
-ifneq ($(BOARD),vck190)
-	echo "No AIE in the device"
-	exit 0
-endif
+ifeq ($(BOARD),vck190)
 	echo $(REL)
 	echo $(VITS_SETTINGS)
-	echo $(PLNX_BSP)
 	echo $(PLNX_SETTINGS)
 
-	mkdir -p $(IMAGE_DIR)
-	mkdir -p $(BUILD_DIR)/$@
 	cp -rf apu_app/$@ $(BUILD_DIR)
 
 	. $(VITS_SETTINGS) && \
@@ -189,11 +157,13 @@ endif
 	export SYSROOT=/proj/xbuilds/$(RELEASE)_daily_latest/internal_platforms/sw/versal/xilinx-versal-common-v$(RELEASE)/sysroots/cortexa72-cortexa53-xilinx-linux/ && \
 	./build.sh
 	cp -rfv $(BUILD_DIR)/$@/designs/xgemm-gmio/export/linux/aie-matrix-multiplication $(IMAGE_DIR)
+endif
 
 #### Build SDT
 #sdtgen set_dt_param -board_dts MACHINE_NAME;
 .PHONY: sdt
 sdt:
+ifneq ($(BOARD),zcu102)
 	echo $(REL)
 	echo $(HW_XSA)
 	echo $(VITS_SETTINGS)
@@ -204,49 +174,48 @@ sdt:
 	xsct -eval "setws .; \
 	sdtgen set_dt_param \
 		-xsa $(HW_XSA) \
-		-dir $(BUILD_DIR)/$@ \
-		/proj/xbuilds/$(RELEASE)_daily_latest/installs/lin64/Vitis/2024.2/data/system-device-tree-xlnx; \
+		-board_dts versal-$(BOARD)-rev1.1 \
+		-dir $(BUILD_DIR)/$@; \
 	sdtgen generate_sdt"
+endif
 
 #### Build petalinux
-#	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description=./ 
 .PHONY: petalinux
 petalinux:
 	echo $(REL)
-	echo $(HW_PREFIX)
 	echo $(PLNX_BSP)
 	echo $(PLNX_SETTINGS)
 
-	mkdir -p $(IMAGE_DIR)
+	mkdir -p $(IMAGE_DIR)/gen_files
+	mkdir -p $(IMAGE_DIR)/static_files
 
-ifeq ($(wildcard $(BUILD_DIR)/$(HW_PREFIX)-$(REL)/.*),)
+ifeq ($(wildcard $(BUILD_DIR)/xilinx-$(BOARD)-$(REL)/.*),)
 	cd $(BUILD_DIR) && \
 	. $(PLNX_SETTINGS) && \
 	petalinux-create -t project -s $(PLNX_BSP) && \
-	cd $(HW_PREFIX)-$(REL) && \
-	petalinux-config --get-hw-description ../sdt/system-top.dts &&\
+	cd xilinx-$(BOARD)-$(REL) && \
+	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description ../sdt/system-top.dts &&\
 	$ [[ $(BOARD) = zcu102 ]] || cp $(HW_XSA) . && \
 	cp ../../boards/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	sed -i -E 's/.*CONFIG_imagefeature-debug-tweaks.+/CONFIG_imagefeature-debug-tweaks=y/'				project-spec/configs/rootfs_config && \
 	sed -i -E 's/.*CONFIG_imagefeature-serial-autologin-root.+/CONFIG_imagefeature-serial-autologin-root=y/' project-spec/configs/rootfs_config && \
-	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || sed -i -E 's/.*CONFIG_zocl.+/CONFIG_zocl=y/' project-spec/configs/rootfs_config && \
-	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || sed -i -E 's/.*CONFIG_xrt.+/CONFIG_xrt=y/' project-spec/configs/rootfs_config && \
+	$ [[ $(BOARD) != vck190 ]] || sed -i -E 's/.*CONFIG_zocl.+/CONFIG_zocl=y/' project-spec/configs/rootfs_config && \
+	$ [[ $(BOARD) != vck190 ]] || sed -i -E 's/.*CONFIG_xrt.+/CONFIG_xrt=y/' project-spec/configs/rootfs_config && \
 	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/.*CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS.+/CONFIG_SUBSYSTEM_FSBL_COMPILER_EXTRA_FLAGS=\"-DFSBL_A53_TCM_ECC_EXCLUDE_VAL=0\"/' project-spec/configs/config && \
 	petalinux-config --silentconfig && \
 	petalinux-create -t apps --template install --name power-demo --enable && \
-	cp -fv ../../apu_app/aie.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
+	$ [[ $(BOARD) != vck190 ]] || cp -fv ../../apu_app/aie.dtbo	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power_demo.sh	project-spec/meta-user/recipes-apps/power-demo/files && \
 	cp -fv ../../apu_app/power-demo.bb	project-spec/meta-user/recipes-apps/power-demo && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv $(IMAGE_DIR)/{partial,greybox}.pdi	project-spec/meta-user/recipes-apps/power-demo/files && \
-	$ [[ $(BOARD) = zcu102 ]] || $ [[ $(BOARD) = vmk180 ]] || \
+	$ [[ $(BOARD) != vck190 ]] || \
 		cp -rfv $(IMAGE_DIR)/aie-matrix-multiplication*	project-spec/meta-user/recipes-apps/power-demo/files && \
-	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
+	$ [[ $(BOARD) != zcu102 ]] || sed -i '/.pdi/d' project-spec/meta-user/recipes-apps/power-demo/power-demo.bb && \
+	$ [[ $(BOARD) = vck190  ]] || sed -i '/aie/d'  project-spec/meta-user/recipes-apps/power-demo/power-demo.bb
 endif
 	. $(PLNX_SETTINGS) && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(IMAGE_DIR)/gen_files && \
-	$ [[ $(BOARD) = zcu102 ]]  || mkdir -p $(IMAGE_DIR)/static_files && \
-	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
+	cd $(BUILD_DIR)/xilinx-$(BOARD)-$(REL) && \
 	petalinux-build && \
 	cp -rfv images/linux/{bl31.elf,boot.scr,u-boot.elf,rootfs.cpio.gz.u-boot,Image}	\
 			$(IMAGE_DIR) && \
@@ -256,7 +225,7 @@ endif
 			$(IMAGE_DIR)/static_files && \
 	$ [[ $(BOARD) = zcu102 ]]  || cp -rfv images/linux/system-default.dtb \
 			$(IMAGE_DIR)/system.dtb && \
-	$ [[ $(BOARD) != zcu102 ]] || cp -rfv hardware/$(HW_PREFIX)-$(REL)/outputs/project_1.xsa \
+	$ [[ $(BOARD) != zcu102 ]] || cp -rfv hardware/xilinx-$(BOARD)-$(REL)/outputs/project_1.xsa \
 			$(IMAGE_DIR)/zcu102_power1.xsa && \
 	$ [[ $(BOARD) != zcu102 ]] || cp -rfv images/linux/{pmufw.elf,zynqmp_fsbl.elf,system.bit,system.dtb} \
 			$(IMAGE_DIR)
@@ -303,10 +272,9 @@ boot_image:
 .PHONY: sd_image
 sd_image:
 	echo $(REL)
-	echo $(HW_PREFIX)
 	echo $(VITS_SETTINGS)
 
-	cd $(BUILD_DIR)/$(HW_PREFIX)-$(REL) && \
+	cd $(BUILD_DIR)/xilinx-$(BOARD)-$(REL) && \
 	cp -fv images/linux/rootfs.tar.gz $(IMAGE_DIR) && \
 	. $(VITS_SETTINGS) && \
 	petalinux-package --wic -i ../images -o $(IMAGE_DIR) -r $(IMAGE_DIR) -b \

@@ -4,8 +4,8 @@
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
-BOARD =? vck190
-BASE_XSA = ../../images.$(BOARD)/$(BOARD)_power1_rp_hw.xsa
+BOARD = vck190
+BASE_XSA = ../images/$(BOARD)_power1_rp_hw.xsa
 PFM_PRJ_DIR = xsct/base/base/export/base
 CURDIR = $(shell pwd)
 
