@@ -133,9 +133,9 @@ ifeq ($(BOARD),vck190)
 	cp -rf hw/$@ $(BUILD_DIR)
 	cd $(BUILD_DIR)/$@ && \
 	. $(VITS_SETTINGS) && \
-	make -C matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platform/base/base.xpfm
+	make -C matrix_mul_thermal BOARD=$(BOARD) PLATFORM=$(BUILD_DIR)/platform/base/base.xpfm && \
 	cp -rfv matrix_mul_thermal/aie_matrix_multiplication.xclbin \
-		$(IMAGE_DIR)/aie-matrix-multiplication.xclbin
+		$(IMAGE_DIR)/aie-matrix-multiplication.xclbin && \
 	cp -rfv matrix_mul_thermal/BOOT.BIN \
 		$(IMAGE_DIR)/partial.pdi
 endif
