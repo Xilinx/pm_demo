@@ -1,5 +1,6 @@
+#******************************************************************************
 # © Copyright 2024 Xilinx, Inc.
-# Copyright (C) 2024, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2025, Advanced Micro Devices, Inc.  All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +13,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#******************************************************************************
 
 
 set rp_info_arg [list]

@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (C) 2019 - 2022 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2025, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -7,8 +8,9 @@
 #include <aie_api/aie.hpp>
 #include "config.h"
 
+
 void TwoInputs(input_window<int32>* __restrict aIn, input_window<int32>* __restrict bypassResult, input_stream_acc48 *bIn,
-	       output_window<int32>* __restrict aOut, output_window<int32>* __restrict result, output_stream_acc48 *bOut)
+		output_window<int32>* __restrict aOut, output_window<int32>* __restrict result, output_stream_acc48 *bOut)
 {
 	static int32 a[NUM_A_ELMNTS_PER_TILE];
 	static int32 b[NUM_COLS];

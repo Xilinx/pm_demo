@@ -1,5 +1,7 @@
-# Copyright (C) 2024 Advanced Micro Devices, Inc.
+###############################################################################
+# Copyright (C) 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
+###############################################################################
 
 YEAR = $(shell date '+%Y')
 MONTH = $(shell date '+%m')

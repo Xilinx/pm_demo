@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 #! /bin/sh
@@ -108,7 +108,7 @@ else
     xrt-smi reset --force -d &>/dev/null
     xrt-smi program -u /usr/bin/aie-matrix-multiplication.xclbin  &>/dev/null
     xrt-smi advanced --aie-clock -s 625000000  &>/dev/null
-    printf "\nAPU: ********* APU and RPU full load, PL, AIE Half Frequency ***********\n"
+    printf "\nAPU: ******* APU and RPU full load, PL, AIE Half Freq. (625MHz) ********\n"
     printf "APU: Sleeping ${DelayVal} seconds...\n\n"
     aie-matrix-multiplication  &>/dev/null
 fi

@@ -1,5 +1,6 @@
 /******************************************************************************
 * Copyright (C) 2019 - 2022 Xilinx, Inc.  All rights reserved.
+* Copyright (C) 2025, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 
@@ -9,8 +10,9 @@
 #include <aie_api/utils.hpp>
 #include "config.h"
 
+
 void OneInput(input_window_uint32 * dataIn, output_window_uint32 * dataOut,
-	      output_window_uint32 * result)
+		  output_window_uint32 * result)
 {
 	static uint32_t a[NUM_A_ELMNTS_PER_TILE];
 	static uint32_t b[NUM_COLS];
@@ -43,9 +45,9 @@ void OneInput(input_window_uint32 * dataIn, output_window_uint32 * dataOut,
 	#endif
 
 	for (unsigned i = 0;
-		      i < NUM_A_ELMNTS_PER_TILE *
-		      		(NUM_HW_COLS - currentCol - 1) / WIN_SIZE;
-		      i++)
+			 i < NUM_A_ELMNTS_PER_TILE *
+			 		(NUM_HW_COLS - currentCol - 1) / WIN_SIZE;
+			  i++)
 	{
 
 		window_acquire(dataOut);
