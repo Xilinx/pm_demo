@@ -15,7 +15,7 @@
 ### 1. Introduction
 This repository contains the source code needed to recreate, modify, and extend 
 DFx boot power demo to demonstrate Versal/ZynqMP devices various power modes. It
-demonstrates below power modes on vck190/vmk180/zcu102 boards.
+demonstrates below power modes on vck190 and zcu102 boards.
 ```
  1. APU, RPU, PL load (typical max power mode)
  2. APU and RPU full load, PL in low power (PS max power mode)
@@ -34,15 +34,15 @@ following tools installed and follow the [build instructions](#2-build-instructi
 
 - A Linux-based host OS supported by Vitis and PetaLinux with about 100GB free
   disk space
-- AMD VCK190 or VMK180 or ZCU102 board
-- [Vitis][1] 202x.x
-- [PetaLinux][2] 202x.x
+- AMD VCK190 or ZCU102 board
+- [Vitis][1] 2024.2
+- [PetaLinux][2] 2024.2
 
 [1]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vitis.html
 [2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
 
-<b>VCK190/VMK180 Board:</b>
-![VCK190/VMK180 Board](https://www.xilinx.com/content/xilinx/en/products/boards-and-kits/vck190/_jcr_content/root/fullParsys/xilinxflexibleslab_1080182232/xilinxflexibleslab-parsys/xilinxtabs2/childParsys-specifications/xilinximage_352e.img.jpg/1624489781894.jpg)
+<b>VCK190 Board:</b>
+![VCK190 Board](https://www.xilinx.com/content/xilinx/en/products/boards-and-kits/vck190/_jcr_content/root/fullParsys/xilinxflexibleslab_1080182232/xilinxflexibleslab-parsys/xilinxtabs2/childParsys-specifications/xilinximage_352e.img.jpg/1624489781894.jpg)
 
 <b>Versal Power Domains:</b>
 ![Power domains](https://docs.xilinx.com/api/khub/maps/YkshAdoNzkNbQqwk6DJygA/resources/_WE2KjhPlWqMylR2Hezu1g/content?Ft-Calling-App=ft%2Fturnkey-portal&Ft-Calling-App-Version=4.1.22)
@@ -68,19 +68,19 @@ export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
 ./settings.sh	# Verify environment variable settings in a shell session
 ```
 
-Use make to build hardware design, petalinux, rpu application and boot image for `BOARD=[vck190|vmk180|zcu102]`.
+Use make to build hardware design, petalinux, rpu application and boot image for `BOARD=[vck190|zcu102]`.
 The final artifacts will be in the build/images folder. Delete build artifacts folders build or build\hwflow_xxx, build\rpu_app, build\xilinx-xxx for a clean build.<br>
 `Note:` It will take several hours (> 6 hours) to build all components.
 - `make help`
 - `make`
     or
-- `make BOARD=[vck190|vmk180|zcu102]`
+- `make BOARD=[vck190|zcu102]`
     or
-- `make hw_design BOARD=[vck190|vmk180]`
+- `make hw_design BOARD=[vck190]`
 - `make xgemm BOARD=[vck190]`
-- `make petalinux BOARD=[vck190|vmk180|zcu102]`
-- `make rpu_app BOARD=[vck190|vmk180|zcu102]`
-- `make boot_image BOARD=[vck190|vmk180|zcu102]`
+- `make petalinux BOARD=[vck190|zcu102]`
+- `make rpu_app BOARD=[vck190|zcu102]`
+- `make boot_image BOARD=[vck190|zcu102]`
 
 ### 3. Directory Structure
 ```
@@ -98,7 +98,6 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 │       └── platforms
 ├── boards
 │   ├── vck190
-│   ├── vmk180
 │   └── zcu102
 ├─ build - Build artifacts
 │   ├─ ...
@@ -202,13 +201,11 @@ Latency:
 [versal-acap-trm]:	https://docs.xilinx.com/r/en-US/am011-versal-acap-trm/Introduction
 [zynqmp-trm]:		https://docs.xilinx.com/r/en-US/ug1085-zynq-ultrascale-trm/Zynq-UltraScale-Device-Technical-Reference-Manual
 [vck190-eval-bd]:	https://docs.xilinx.com/r/en-US/ug1366-vck190-eval-bd
-[vmk180-eval-bd]:	https://docs.xilinx.com/r/en-US/ug1411-vmk180-eval-bd
 [zcu102-eval-bd]:	https://docs.xilinx.com/v/u/en-US/ug1182-zcu102-eval-bd
 1. [Versal ACAP Technical Reference Manual][versal-acap-trm]<br>
 2. [Zynq UltraScale+ Device Technical Reference Manual][zynqmp-trm]
 3. [VCK190 Evaluation Board User Guide][vck190-eval-bd]
-4. [VMK180 Evaluation Board User Guide][vmk180-eval-bd]
-5. [ZCU102 Board User Guide][zcu102-eval-bd]
+4. [ZCU102 Board User Guide][zcu102-eval-bd]
 8. <b>Docker<b>
     ##### Install and setup docker
     - curl -fsSL https://get.docker.com -o get-docker.sh

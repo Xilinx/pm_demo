@@ -57,28 +57,28 @@ help:
 	@echo '  make'
 	@echo '    hw_design platform overlay xgemm petalinux rpu_app boot_image'
 	@echo ''
-	@echo '  make hw_design [BOARD=vck190|vmk180]'
-	@echo '    Generate extensible xsa for board'
+	@echo '  make hw_design'
+	@echo '    Generate extensible xsa for VCK190 board'
 	@echo ''
-	@echo '  make platform [BOARD=vck190]'
-	@echo '    Generate base platform'
+	@echo '  make platform'
+	@echo '    Generate base platform for VCK190'
 	@echo ''
-	@echo '  make overlay [BOARD=vck190]'
-	@echo '    Generate overlay (power + matrix_mul_thermal)'
+	@echo '  make overlay'
+	@echo '    Generate overlay (power + matrix_mul_thermal) for VCK190'
 	@echo ''
-	@echo '  make xgemm [BOARD=vck190]'
-	@echo '    Build xgemm'
+	@echo '  make xgemm'
+	@echo '    Build xgemm AIE application for VCK190'
 	@echo ''
-	@echo '  make sdt [BOARD=vck190|vmk180]'
-	@echo '    Build sdt'
+	@echo '  make sdt'
+	@echo '    Build sdt for VCK190'
 	@echo ''
-	@echo '  make petalinux [BOARD=vck190|vmk180|zcu102]'
+	@echo '  make petalinux [BOARD=vck190|zcu102]'
 	@echo '    Build linux images'
 	@echo ''
-	@echo '  make rpu_app [BOARD=vck190|vmk180|zcu102]'
+	@echo '  make rpu_app [BOARD=vck190|zcu102]'
 	@echo '    Build rpu_app'
 	@echo ''
-	@echo '  make boot_image [BOARD=vck190|vmk180|zcu102]'
+	@echo '  make boot_image [BOARD=vck190|zcu102]'
 	@echo '    Generate BOOT.BIN'
 	@echo ''
 	@echo '  Defaults:'
@@ -90,11 +90,10 @@ help:
 	@echo ''
 
 
-#### Build hardware design (vck190 or vmk180)
+#### Build hardware design (vck190)
 .PHONY: hw_design
 hw_design:
 	echo $(REL)
-	echo $(BOARD)
 	echo $(VITS_SETTINGS)
 
 ifneq ($(BOARD),zcu102)
@@ -114,22 +113,26 @@ ifneq ($(BOARD),zcu102)
 	cp -fv ../$(BOARD)_power1.runs/impl_1/*_partial.pdi $(IMAGE_DIR)/partial.pdi
 endif
 
+#### Build platform
 .PHONY: platform
 platform:
 ifeq ($(BOARD),vck190)
-	@echo $(BOARD)
+	echo $(REL)
 	@echo $(VITS_SETTINGS)
+
 	cp -rf hw/$@ $(BUILD_DIR)/
 	. $(VITS_SETTINGS) && \
 	cd $(BUILD_DIR)/$@ && \
 	make BOARD=$(BOARD)
 endif
 
+#### Build overlay
 .PHONY: overlay
 overlay:
 ifeq ($(BOARD),vck190)
-	@echo $(BOARD)
+	echo $(REL)
 	@echo $(VITS_SETTINGS)
+
 	cp -rf hw/$@ $(BUILD_DIR)
 	cd $(BUILD_DIR)/$@ && \
 	. $(VITS_SETTINGS) && \
