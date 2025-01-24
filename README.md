@@ -14,32 +14,36 @@
 
 ### 1. Introduction
 This repository contains the source code needed to recreate, modify, and extend 
-DFx boot power demo to demonstrate Versal/ZynqMP devices various power modes. It
-demonstrates below power modes on vck190 and zcu102 boards.
+DFx configured power demo to demonstrate Versal and ZynqMP devices various power
+ modes. It demonstrates the below power modes on vck190 and zcu102 boards.
 ```
- 1. APU, RPU, PL load (typical max power mode)
- 2. APU and RPU full load, PL in low power (PS max power mode)
- 3. APU full load, RPU idle, PL in low power
- 4. APU (APU0 only) full load, RPU idle, PL in low power
- 5. APU (APU0 low freq 300MHz) full, RPU idle, PL in low power
- 6. APU Linux Idle, RPU idle, PL in low power (Linux Idle)
- 7. APU suspended with FPD ON, RPU idle, PL in low power
- 8. APU suspended with FPD OFF, RPU full load, PL in low power
- 9. APU suspended with FPD OFF, RPU idle, PL in low power
-10. APU suspended with FPD OFF, RPU suspended, PL in low power
+ 1. APU, RPU, PL and AIE load (typical max power mode)
+ 2. APU, RPU, PL and AIE in half freq. @625MHz load
+ 3. APU, RPU, PL load and AIE clock gated
+ 4. APU and RPU full load, PL in low power (PS max power mode)
+ 5. APU full load, RPU idle, PL in low power
+ 6. APU (APU0 only) full load, RPU idle, PL in low power
+ 7. APU (APU0 low freq 300MHz) full, RPU idle, PL in low power
+ 8. APU Linux Idle, RPU idle, PL in low power (Linux Idle)
+ 9. APU suspended with FPD ON, RPU idle, PL in low power
+10. APU suspended with FPD OFF, RPU full load, PL in low power
+11. APU suspended with FPD OFF, RPU idle, PL in low power
+12. APU suspended with FPD OFF, RPU suspended, PL in low power
 ```
 
 To build sample designs from source code in this repository, you will need to have the
 following tools installed and follow the [build instructions](#2-build-instructions):
 
-- A Linux-based host OS supported by Vitis and PetaLinux with about 100GB free
-  disk space
+- A Linux-based host OS with Vivado, Vitis and PetaLinux tools installed. It requires
+  about 125GB free disk space
 - AMD VCK190 or ZCU102 board
-- [Vitis][1] 2024.2
-- [PetaLinux][2] 2024.2
+- [Vivado][1] 2024.2
+- [Vitis][2] 2024.2
+- [PetaLinux][3] 2024.2
 
-[1]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vitis.html
-[2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
+[1]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools.html
+[2]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vitis.html
+[3]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
 
 <b>VCK190 Board:</b>
 ![VCK190 Board](https://www.xilinx.com/content/xilinx/en/products/boards-and-kits/vck190/_jcr_content/root/fullParsys/xilinxflexibleslab_1080182232/xilinxflexibleslab-parsys/xilinxtabs2/childParsys-specifications/xilinximage_352e.img.jpg/1624489781894.jpg)
@@ -60,7 +64,6 @@ Defaults:
  VITIS_SETTINGS=/proj/xbuilds/2024.2_daily_latest/installs/lin64/Vitis/2024.2/settings64.sh
  Note: Change Makefile variable RELEASE=202x.x to build for a different release version.
 ```
-Vitis and PetaLinux tools need to be installed before building any design.
 ```bash
 export PETALINUX_BSP=<PetaLinux BSP path>
 export PETALINUX_SETTINGS=<PetaLinux install path>/settings.sh
@@ -68,19 +71,25 @@ export VITIS_SETTINGS=<Vitis_install_path>/Vitis/202x.x/settings64.sh
 ./settings.sh	# Verify environment variable settings in a shell session
 ```
 
-Use make to build hardware design, petalinux, rpu application and boot image for `BOARD=[vck190|zcu102]`.
-The final artifacts will be in the build/images folder. Delete build artifacts folders build or build\hwflow_xxx, build\rpu_app, build\xilinx-xxx for a clean build.<br>
-`Note:` It will take several hours (> 6 hours) to build all components.
+Use make to build hardware design, platform, overlay, sdt, xgemm, petalinux, rpu_app and boot image
+for `BOARD=[vck190|zcu102]`.
+The final artifacts will be in the build.<BOARD>/images folder. Delete build artifacts folders build or build\hwflow_xxx, build\rpu_app, build\xilinx-xxx for a clean build.<br>
+`Note:` It will take several hours (> 9 hours) to build all components.
 - `make help`
 - `make`
     or
 - `make BOARD=[vck190|zcu102]`
     or
-- `make hw_design BOARD=[vck190]`
-- `make xgemm BOARD=[vck190]`
+- `make hw_design`
+- `make platform`
+- `make overlay`
+- `make sdt`
+- `make xgemm`
 - `make petalinux BOARD=[vck190|zcu102]`
 - `make rpu_app BOARD=[vck190|zcu102]`
 - `make boot_image BOARD=[vck190|zcu102]`
+
+![Build Flow](./boards/build_flow.jpg)
 
 ### 3. Directory Structure
 ```
@@ -99,10 +108,10 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 ├── boards
 │   ├── vck190
 │   └── zcu102
-├─ build - Build artifacts
+├─ build.<BOARD> - Build artifacts
 │   ├─ ...
-│   └─ images.(BOARD) - Contains all build images
-├── hw
+│   └─ images - Contains all build images
+├── hw        - Hardware design
 │   ├── ip
 │   │   ├── bufg_ctrl
 │   │   │   ├── src
@@ -112,16 +121,13 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 │   │       │   ├── vio_bram
 │   │       │   └── vio_top_logic
 │   │       └── xgui
+│   ├── overlay
+│   │   └── matrix_mul_thermal
+│   │       └── aie
+│   │           └── kernels
+│   ├── platform
 │   └── xdc
 │       └── qor_scripts
-├── overlays
-│   ├── matrix_mul_thermal
-│   │   └── aie
-│   │       └── kernels
-│   └── matrix_mul_thermal_auto
-│       └── aie
-│           └── kernels
-├── platforms
 └── rpu_app - RPU application
 ├── Dockerfile
 ├── LICENSE
@@ -131,40 +137,31 @@ The final artifacts will be in the build/images folder. Delete build artifacts f
 └── xmake        - Docker make file (petalinux only for now)
 ```
 ### 4. Test
+![Board Setup](./boards/vck190_setup.jpg)
 <b>SD mode:</b>
-    Copy `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` files to a bootable FAT32 formatted SD Card.
-    Power up the board. Use a terminal application to open console <T1:com0> and <T2:com2>(115200 8N1) connected to the board.
-<b>jtag mode:</b>
-    Open a xsdb console <T3> connected to the board.
--   Setup tftp server `"<path to Image...>"`
--   T3: xsdb% `cd {<path to Image...>}`
--   T3: xsdb% `device program BOOT.BIN`       <b>zcu102:</b> xsdb% `source boot.tcl`
--   T1: Stop auto boot by <Enter key> at the u-boot prompt [Versal | ZynqMP]
--   T1: [Versal | ZynqMP]> `run wr_sdboot`
--   T1: Power cycle the board and set bootmode to `sd_ls`
--   T3: <b>zcu102:</b>xsdb% `boot_sd`
--   T1: Stop auto boot by <Enter key> at u-boot prompt [Versal | ZynqMP]
--   T1: [Versal | ZynqMP]> `run bt_tftp`
--   Once petalinux is up, run the demo<br>    root@xilinx-vck190-2022301:~# `sudo power_demo.sh`
--   Check the power rail values from the System controller on <T2> console<br>    T2: `sc_app -c listpower` <br> T2: `sc_app -c getpower -t VCC_PSFP`
+    Copy `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` files to a bootable FAT32 formatted SD Card. Switch SD boot mode and power up the board. Use a terminal application to open console <T1: com0> and <T2: com2> (115200 8N1) connected to the board.
+-   Once petalinux is up (T1), run the demo<br>    root@xilinx-vck190-2022301:~# `power_demo.sh`
+-   Check the power rail values from the System controller on <T2> console<br>    T2: `sc_app -c listpower` <br> T2: `sc_app -c getpower -t VCCINT_PSFP`
+-   System Controller BEAM web interface can also be used to measure power 
 
-## 5. Measured Power
+## 5. Versal Measured Power
 ---
  <font size="1"> 
 
 | Power State | Description | PLD<br>Power<br>(W)|FPD<br>Power<br>(W)|LPD<br>Power<br>(W)|SoC<br>Power<br>(W)|PMC<br>Power<br>(W)|BBRAM<br>Power<br>(W)|Total<br>Power<br>(W)|
 | :---------- | :---------- | :----------: | :----------: | :----------: | :----------: | :----------: | :-------------: | :------------: |
-|APU, RPU, PL full load (Max typical power)					|FPD, LPD and PLD in high power mode	 |29.6781|0.4737|0.1328|3.5625|0.1070|0.1070|34.0611|
-|APU and RPU full load, PL in low power						|R5s Active, A72s Active				 | 3.6039|0.4737|0.1314|3.4965|0.1078|0.1070| 7.9203|
-|APU full load, RPU idle, PL in low power					|R5s Idle, A72s Active					 | 3.5556|0.4717|0.1238|3.4803|0.1049|0.1077| 7.8444|
-|APU (APU0 only) full load, RPU idle, PL in low power		|R5s Idle, 1 A72 Active					 | 3.6039|0.3676|0.1234|3.4682|0.1050|0.1063| 7.7744|
-|APU (APU0 low freq 300MHz) full, RPU idle, PL in low power	|R5s Idle, APU0 300MHz					 | 4.2021|0.1679|0.1234|3.4682|0.1050|0.1071| 8.1737|
-|APU Linux Idle, RPU idle, PL in low power					|R5s Idle, 1 A72 Idle					 | 3.7007|0.1770|0.1230|3.4642|0.1065|0.1077| 7.6791|
-|APU suspended with FPD ON, RPU idle, PL in low power		|R5s Idle, A72s Off, DDR Self Refresh	 | 3.2603|0.3175|0.1127|3.4561|0.1026|0.1070| 7.3562|
-|APU suspended with FPD OFF, RPU full load, PL in low power	|R5s Active, FPD Off					 | 4.0151|     0|0.1270|3.4521|0.0990|0.0830| 7.7762|
-|APU suspended with FPD OFF, RPU idle, PL in low power		|R5s Idle, FPD Off, DDR Self Refresh	 | 3.5556|     0|0.1113|3.4642|0.1033|0.0838| 7.3182|
-|APU suspended with FPD OFF, RPU suspended, PL in low power	|R5s suspended, FPD Off, DDR Self Refresh| 3.4776|     0|0.1131|3.4642|0.1005|0.0830| 7.2384|
-
+|APU, RPU, PL, AIE full load (Max typical power)			|FPD, LPD, PLD and AIE in high power mode|35.1689|0.6897|0.1852|4.7791|0.1117|0.1070|41.0416|
+|APU, RPU, PL, AIE Half Freq @625MHz               			|FPD, LPD, PLD and AIE in half freq 	 |28.1351|0.6653|0.1867|4.8478|0.1086|0.1070|34.0505|
+|APU, RPU, PL in full and AIE clock gated	                |FPD, LPD, PLD and AIE clock gated   	 |21.9805|0.6531|0.1875|4.8615|0.1109|0.1070|27.9005|
+|APU and RPU full load, PL in low power						|R5s Active, A72s Active				 | 2.6377|0.6516|0.1859|4.5182|0.1141|0.1070| 8.2145|
+|APU full load, RPU idle, PL in low power					|R5s Idle, A72s Active					 | 2.6377|0.6485|0.1742|4.5045|0.1133|0.1070| 8.1852|
+|APU (APU0 only) full load, RPU idle, PL in low power		|R5s Idle, 1 A72 Active					 | 2.6377|0.5097|0.1742|4.4770|0.1148|0.1078| 8.0212|
+|APU (APU0 low freq 300MHz) full, RPU idle, PL in low power	|R5s Idle, APU0 300MHz					 | 2.6377|0.1999|0.1742|4.4633|0.1125|0.1070| 7.6946|
+|APU Linux Idle, RPU idle, PL in low power					|R5s Idle, 1 A72 Idle					 | 2.6377|0.2487|0.1742|4.4633|0.1156|0.1070| 7.7465|
+|APU suspended with FPD ON, RPU idle, PL in low power		|R5s Idle, A72s Off, DDR Self Refresh	 | 2.6377|0.4410|0.1625|4.4950|0.1109|0.1070| 7.9541|
+|APU suspended with FPD OFF, RPU full load, PL in low power	|R5s Active, FPD Off					 | 2.6377|0.0000|0.1859|4.4221|0.1086|0.0867| 7.4410|
+|APU suspended with FPD OFF, RPU idle, PL in low power		|R5s Idle, FPD Off, DDR Self Refresh	 | 2.6377|0.0000|0.1609|4.4083|0.1125|0.0867| 7.4061|
+|APU suspended with FPD OFF, RPU suspended, PL in low power	|R5s suspended, FPD Off, DDR Self Refresh| 2.6377|0.0000|0.1617|4.4083|0.1156|0.0867| 7.4108|
 
 Latency:
 | Power State Transition						   | Latency (ms)|Notes	|

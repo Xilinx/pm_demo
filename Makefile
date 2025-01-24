@@ -199,8 +199,6 @@ ifeq ($(wildcard $(BUILD_DIR)/xilinx-$(BOARD)-$(REL)/.*),)
 	cd xilinx-$(BOARD)-$(REL) && \
 	$ [[ $(BOARD) = zcu102 ]] || petalinux-config --silentconfig --get-hw-description ../sdt/system-top.dts &&\
 	$ [[ $(BOARD) = zcu102 ]] || cp $(HW_XSA) . && \
-	cp ../../boards/uboot-env.vars project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
-	$ [[ $(BOARD) != zcu102 ]] || sed -i -E 's/versal/zynqmp/' project-spec/meta-user/recipes-bsp/u-boot/files/platform-top.h && \
 	sed -i -E 's/.*CONFIG_imagefeature-debug-tweaks.+/CONFIG_imagefeature-debug-tweaks=y/'				project-spec/configs/rootfs_config && \
 	sed -i -E 's/.*CONFIG_imagefeature-serial-autologin-root.+/CONFIG_imagefeature-serial-autologin-root=y/' project-spec/configs/rootfs_config && \
 	$ [[ $(BOARD) != vck190 ]] || sed -i -E 's/.*CONFIG_zocl.+/CONFIG_zocl=y/' project-spec/configs/rootfs_config && \
