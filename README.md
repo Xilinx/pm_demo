@@ -137,7 +137,7 @@ The final artifacts will be in the build.<BOARD>/images folder. Delete build art
 └── xmake        - Docker make file (petalinux only for now)
 ```
 ### 4. Test
-![Board Setup](./boards/vck190_setup.jpg)
+![Board Setup](./boards/vck190/setup.jpg)
 <b>SD mode:</b>
     Copy `BOOT.BIN, system.dtb, Image and rootfs.cpio.gz.u-boot` files to a bootable FAT32 formatted SD Card. Switch SD boot mode and power up the board. Use a terminal application to open console <T1: com0> and <T2: com2> (115200 8N1) connected to the board.
 -   Once petalinux is up (T1), run the demo<br>    root@xilinx-vck190-2022301:~# `power_demo.sh`
