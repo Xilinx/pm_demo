@@ -144,10 +144,11 @@ The final artifacts will be in the build.<BOARD>/images folder. Delete build art
 -   Check the power rail values from the System controller on <T2> console<br>    T2: `sc_app -c listpower` <br> T2: `sc_app -c getpower -t VCCINT_PSFP`
 -   System Controller BEAM web interface can also be used to measure power 
 
-## 5. Versal Measured Power
+## 5. Versal Measured Power<br>
+<span style="color:Orange">Note: The mmeasured power are typical values with default versal fan settings. The values vary depending on the ambient conditions.</span><br>
+
 ---
  <font size="1"> 
-Note: The mmeasured power typical values tested with default versal fan setting and might vary depending on the temperature conditions.
 
 | Power State | Description | PLD<br>Power<br>(W)|FPD<br>Power<br>(W)|LPD<br>Power<br>(W)|SoC<br>Power<br>(W)|PMC<br>Power<br>(W)|BBRAM<br>Power<br>(W)|Total<br>Power<br>(W)|
 | :---------- | :---------- | :----------: | :----------: | :----------: | :----------: | :----------: | :-------------: | :------------: |
