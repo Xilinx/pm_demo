@@ -46,13 +46,13 @@ following tools installed and follow the [build instructions](#2-build-instructi
 [3]: https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/embedded-design-tools.html
 
 <b>VCK190 Board:</b>
-![VCK190 Board](https://www.xilinx.com/content/xilinx/en/products/boards-and-kits/vck190/_jcr_content/root/fullParsys/xilinxflexibleslab_1080182232/xilinxflexibleslab-parsys/xilinxtabs2/childParsys-specifications/xilinximage_352e.img.jpg/1624489781894.jpg)
+![VCK190 Board](https://www.amd.com/content/dam/amd/en/images/products/boards/vck190/2832119-vck190-features.jpg)
 
 <b>Versal Power Domains:</b>
-![Power domains](https://docs.xilinx.com/api/khub/maps/YkshAdoNzkNbQqwk6DJygA/resources/_WE2KjhPlWqMylR2Hezu1g/content?Ft-Calling-App=ft%2Fturnkey-portal&Ft-Calling-App-Version=4.1.22)
+![Power domains](https://docs.amd.com/api/khub/maps/Tt~~F_xzxfIVukPGy93V8w/resources/w179V9c003VvSWZHjYj4HA-Tt~~F_xzxfIVukPGy93V8w/content?v=b161143356ab0273&Ft-Calling-App=ft/turnkey-portal)
 
 <b>ZCU102 Board:</b>
-![ZCU102 Board](https://www.xilinx.com/content/xilinx/en/products/boards-and-kits/ek-u1-zcu102-g/_jcr_content/root/fullParsys/xilinxflexibleslab_749886269/xilinxflexibleslab-parsys/xilinxtabs2_copy/childParsys-specifications/xilinximage.img.jpg/1519410010855.jpg)
+![ZCU102 Board](https://www.amd.com/content/dam/amd/en/images/products/boards/zcu102/2832119-zcu102-callouts.jpg)
 
 ### 2. Build Instructions
 ```
@@ -147,7 +147,7 @@ The final artifacts will be in the build.<BOARD>/images folder. Delete build art
 ## 5. Versal Measured Power
 ---
  <font size="1"> 
-
+Note: The mmeasured power typical values tested with default versal fan setting and might vary depending on the temperature conditions.
 | Power State | Description | PLD<br>Power<br>(W)|FPD<br>Power<br>(W)|LPD<br>Power<br>(W)|SoC<br>Power<br>(W)|PMC<br>Power<br>(W)|BBRAM<br>Power<br>(W)|Total<br>Power<br>(W)|
 | :---------- | :---------- | :----------: | :----------: | :----------: | :----------: | :----------: | :-------------: | :------------: |
 |APU, RPU, PL, AIE full load (Max typical power)			|FPD, LPD, PLD and AIE in high power mode|35.1689|0.6897|0.1852|4.7791|0.1117|0.1070|41.0416|
