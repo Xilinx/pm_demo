@@ -148,6 +148,7 @@ The final artifacts will be in the build.<BOARD>/images folder. Delete build art
 ---
  <font size="1"> 
 Note: The mmeasured power typical values tested with default versal fan setting and might vary depending on the temperature conditions.
+
 | Power State | Description | PLD<br>Power<br>(W)|FPD<br>Power<br>(W)|LPD<br>Power<br>(W)|SoC<br>Power<br>(W)|PMC<br>Power<br>(W)|BBRAM<br>Power<br>(W)|Total<br>Power<br>(W)|
 | :---------- | :---------- | :----------: | :----------: | :----------: | :----------: | :----------: | :-------------: | :------------: |
 |APU, RPU, PL, AIE full load (Max typical power)			|FPD, LPD, PLD and AIE in high power mode|35.1689|0.6897|0.1852|4.7791|0.1117|0.1070|41.0416|
