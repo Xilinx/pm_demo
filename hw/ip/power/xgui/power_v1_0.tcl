@@ -1,22 +1,21 @@
 ###############################################################################
-# Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
+
 # Definitional proc to organize widgets for parameters.
 proc init_gui { IPINST } {
-  ipgui::add_param $IPINST -name "Component_Name"
-  #Adding Page
-  set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
-  ipgui::add_param $IPINST -name "DATAWIDTH_18K" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "DATAWIDTH_36K" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "NUM_LOGIC_BLOCKS" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "NUM_RAMB_18_DC" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "NUM_RAMB_36_DC" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "Numbr_of_DSP" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "dsize" -parent ${Page_0}
-  ipgui::add_param $IPINST -name "nbtap" -parent ${Page_0}
-
-
+    ipgui::add_param $IPINST -name "Component_Name"
+    #Adding Page
+    set Page_0 [ipgui::add_page $IPINST -name "Page 0"]
+    ipgui::add_param $IPINST -name "DATAWIDTH_18K" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "DATAWIDTH_36K" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "NUM_LOGIC_BLOCKS" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "NUM_RAMB_18_DC" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "NUM_RAMB_36_DC" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "Numbr_of_DSP" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "dsize" -parent ${Page_0}
+    ipgui::add_param $IPINST -name "nbtap" -parent ${Page_0}
 }
 
 proc update_PARAM_VALUE.DATAWIDTH_18K { PARAM_VALUE.DATAWIDTH_18K } {

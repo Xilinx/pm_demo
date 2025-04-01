@@ -1,23 +1,30 @@
 /******************************************************************************
-* Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
+#include <xscugic_hw.h>
 #include "gic_setup.h"
 #include "pm_client.h"
-#include <xscugic_hw.h>
+
 
 #define INTC_DEVICE_ID		XPAR_SCUGIC_SINGLE_DEVICE_ID
 
 typedef struct {
 	void *CallBackRef;
-	u8 Enabled;
+	u8    Enabled;
 } GicIrqEntry;
 
 static GicIrqEntry GicIrqTable[XSCUGIC_MAX_NUM_INTR_INPUTS];
 
-s32 GicSetupInterruptSystem(XScuGic *GicInst)
+
+/**
+ * @GicSetupInterruptSystem() - Setup GIC
+ *
+ * @GicInst	Pointer to the GIC data structure
+ */
+XStatus GicSetupInterruptSystem(XScuGic *GicInst)
 {
-	s32 Status;
+	XStatus Status;
 
 	XScuGic_Config *GicCfgPtr = XScuGic_LookupConfig(INTC_DEVICE_ID);
 	if (NULL == GicCfgPtr) {
@@ -40,17 +47,21 @@ s32 GicSetupInterruptSystem(XScuGic *GicInst)
 #elif defined (__arm__)
 	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_IRQ_INT,
 #endif
-				     (Xil_ExceptionHandler)XScuGic_InterruptHandler,
-				     GicInst);
+		(Xil_ExceptionHandler)XScuGic_InterruptHandler, GicInst);
 	Xil_ExceptionEnable();
 
 done:
 	return Status;
 }
 
-s32 GicResume(XScuGic *GicInst)
+/**
+ * @GicResume() - Resume GIC
+ *
+ * @GicInst	Pointer to the GIC data structure
+ */
+XStatus GicResume(XScuGic *GicInst)
 {
-	s32 Status;
+	XStatus Status;
 	u32 i;
 
 	GicInst->IsReady = 0U;
@@ -72,39 +83,42 @@ s32 GicResume(XScuGic *GicInst)
 	}
 
 	/* Restore handler pointers and enable interrupt if it was enabled */
-	for (i = 0U; i < XSCUGIC_MAX_NUM_INTR_INPUTS; i++) {
+	for (i = 0U; XSCUGIC_MAX_NUM_INTR_INPUTS > i; i++) {
 		GicInst->Config->HandlerTable[i].CallBackRef = GicIrqTable[i].CallBackRef;
 
 		if (GicIrqTable[i].Enabled) {
 			XScuGic_Enable(GicInst, i);
 		}
 	}
-
 	Xil_ExceptionEnable();
 
 done:
 	return Status;
 }
 
+/**
+ * @GicSuspend() - GicSuspend handler
+ *
+ * @GicInst	Pointer to the GIC data structure
+ */
 void GicSuspend(XScuGic *const GicInst)
 {
 	u32 i;
+	u32 Reg;
+	u32 Mask;
 
-	for (i = 0U; i < XSCUGIC_MAX_NUM_INTR_INPUTS; i++) {
-		u32 Mask, Reg;
+	for (i = 0U; XSCUGIC_MAX_NUM_INTR_INPUTS > i; i++) {
 
 		GicIrqTable[i].CallBackRef = GicInst->Config->HandlerTable[i].CallBackRef;
 
 		Mask = 0x00000001U << (i % 32U);
-		Reg = XScuGic_DistReadReg(GicInst, XSCUGIC_ENABLE_SET_OFFSET +
-					  ((i / 32U) * 4U));
-		if (Mask & Reg)
-			GicIrqTable[i].Enabled = 1U;
-		else
-			GicIrqTable[i].Enabled = 0U;
+		Reg  = XScuGic_DistReadReg(GicInst, XSCUGIC_ENABLE_SET_OFFSET +
+					((i / 32U) * 4U));
+		GicIrqTable[i].Enabled = (Mask & Reg) ? 1U : 0U;
 	}
 
 #if defined (GICv3)
 	XScuGic_MarkCoreAsleep(GicInst);
 #endif
 }
+

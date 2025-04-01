@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+// SPDX-License-Identifier: MIT
+///////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns / 1ps
 
 module bufg_ctrl(
@@ -6,7 +11,7 @@ module bufg_ctrl(
    input I1,
    input S
     );
-    
+
     BUFGMUX_CTRL BUFGMUX_CTRL_inst (
       .O(O),   // 1-bit output: Clock output
       .I0(I0), // 1-bit input: Clock input (S=0)
@@ -14,5 +19,5 @@ module bufg_ctrl(
       .S(S)    // 1-bit input: Clock select
    );
 
-    
+
 endmodule

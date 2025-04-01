@@ -1,32 +1,37 @@
 ###############################################################################
-# Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
 SHELL := /bin/bash
+BOARD ?= vck190
+BASE_XSA ?= ../images/vck190_power1.xsa
 
-.PHONY: init
-init:
+.PHONY: rpu_app
+rpu_app:
+ifeq ($(wildcard rpu_app/.*),)
 	xsct -eval "setws .; \
-	repo -set .;\
-	app create -name rpu_app -hw $(BASE_XSA) -os standalone -proc cortexr5_0 -template {Empty Application(C)}; \
+	repo -set .; \
+	app create -name $@ -hw $(BASE_XSA) -os standalone -proc cortexr5_0 -template {Empty Application(C)}; \
 	bsp setlib -name xilpm;\
-	exec cp ../../rpu_app/main.c rpu_app/src; \
-	exec cp ../../rpu_app/rtc.c rpu_app/src; \
-	exec cp ../../rpu_app/rtc.h rpu_app/src; \
-	exec cp ../../rpu_app/pm_init.c rpu_app/src; \
-	exec cp ../../rpu_app/pm_init.h rpu_app/src; \
-	exec cp ../../rpu_app/ipi.c rpu_app/src; \
-	exec cp ../../rpu_app/ipi.h rpu_app/src; \
-	exec cp ../../rpu_app/gic_setup.c rpu_app/src; \
-	exec cp ../../rpu_app/gic_setup.h rpu_app/src; \
-	exec cp ../../rpu_app/lscript.ld rpu_app/src; \
-	platform active $(TARGET_BOARD)_power1; \
-	platform generate; "
-
-
-.PHONY: app
-app:
+	exec cp ../../$@/main.c      $@/src; \
+	exec cp ../../$@/rtc.c       $@/src; \
+	exec cp ../../$@/rtc.h       $@/src; \
+	exec cp ../../$@/pm_init.c   $@/src; \
+	exec cp ../../$@/pm_init.h   $@/src; \
+	exec cp ../../$@/ipi.c       $@/src; \
+	exec cp ../../$@/ipi.h       $@/src; \
+	exec cp ../../$@/gic_setup.c $@/src; \
+	exec cp ../../$@/gic_setup.h $@/src; \
+	exec cp ../../$@/lscript.ld  $@/src; \
+	platform active $(BOARD)_power1; \
+	platform generate; \
+	app build -name $@"
+else
+	cp ../../$@/main.c $@/src
 	xsct -eval "setws .; \
-	app build -name rpu_app"
+	repo -set .; \
+	app clean -name $@; \
+	app build -name $@"
+endif
 

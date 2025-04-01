@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2022, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 #ifndef _RTC_H_
@@ -9,7 +9,8 @@
 #include "xrtcpsu.h"		/* RTCPSU device driver */
 #include "xscugic.h"
 
-int PmRtcInit(XScuGic *const GicInst, XRtcPsu *RtcInstPtr);
-void SetRtcAlarm(XRtcPsu *RtcInstPtr, u32 AlarmPeriod);
+XStatus PmRtcInit(XScuGic *const GicInst, XRtcPsu *RtcInstPtr);
+void    SetRtcAlarm(XRtcPsu *RtcInstPtr, u32 AlarmPeriod);
 
 #endif /* _RTC_H_ */
+

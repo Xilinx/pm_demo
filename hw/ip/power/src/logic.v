@@ -1,6 +1,11 @@
+///////////////////////////////////////////////////////////////////////////////
+// Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+// SPDX-License-Identifier: MIT
+///////////////////////////////////////////////////////////////////////////////
+
 `timescale 1ns / 1ps
 
-module logic 
+module logic
     (
 	input          clk,
 	input          rst,
@@ -66,7 +71,7 @@ always @ (posedge clk)
     else
         toggle_rate 	<= toggle_rate_vio;
     end
-    	
+
 
 // Basic_Block
 //
@@ -81,7 +86,7 @@ always @ (posedge clk)
 
    genvar cnt;
    generate
-      for (cnt=1; cnt < NUM_BASE_LOGIC_BLOCKS+1; cnt=cnt+1) 
+      for (cnt=1; cnt < NUM_BASE_LOGIC_BLOCKS+1; cnt=cnt+1)
       begin: logic_gen
 (* DONT_TOUCH="TRUE" *)	basic_block ubasic_block (
 		.clk(clk),
