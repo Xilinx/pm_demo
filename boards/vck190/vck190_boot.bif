@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 new_bif:
@@ -39,7 +39,7 @@ new_bif:
   {
    id = 0x0B
    core = psm
-   file = static_files/psm_fw.elf
+   file = static_files/psmfw.elf
   }
  }
  image
@@ -57,6 +57,17 @@ new_bif:
    id = 0x05
    type = cdo
    file = vck190_base_wrapper_out.rnpi
+  }
+ }
+ image
+ {
+  name = aie_subsys
+  id = 0x421c005
+  partition
+  {
+   id = 0x07
+   type = cdo
+   file = gen_files/ai_engine_data.cdo
   }
  }
  image

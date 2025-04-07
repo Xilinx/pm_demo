@@ -8,10 +8,10 @@
 #
 #This file works only with our platform. There will be need to review this xdc as per your resource requirements in static region.
 # Creating pblock for Vitis Region
-set_property PACKAGE_PIN AW27 [get_ports clk_p]
-set_property IOSTANDARD LVDS15 [get_ports clk_p]
-set_property PACKAGE_PIN AY27 [get_ports clk_n]
-set_property IOSTANDARD LVDS15 [get_ports clk_n]
+#set_property PACKAGE_PIN AW27 [get_ports clk_p]
+#set_property IOSTANDARD LVDS15 [get_ports clk_p]
+#set_property PACKAGE_PIN AY27 [get_ports clk_n]
+#set_property IOSTANDARD LVDS15 [get_ports clk_n]
 create_pblock pblock_slot0
 add_cells_to_pblock [get_pblocks pblock_slot0] [get_cells -quiet [list vck190_power1_i/slot0]]
 
@@ -39,6 +39,5 @@ resize_pblock pblock_slot0 -remove [get_sites -of_objects [get_tiles CLK_VNOC_PS
 
 set_property SNAPPING_MODE ON [get_pblocks pblock_slot0]
 set_property IS_SOFT FALSE [get_pblocks pblock_slot0]
-
 
 

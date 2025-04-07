@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
 
@@ -12,7 +12,7 @@ rpu_app:
 ifeq ($(wildcard rpu_app/.*),)
 	xsct -eval "setws .; \
 	repo -set .; \
-	app create -name $@ -hw $(BASE_XSA) -os standalone -proc CIPS_0_pspmc_0_psv_cortexr5_0 -template {Empty Application(C)}; \
+	app create -name $@ -hw $(BASE_XSA) -os standalone -proc cortexr5_0 -template {Empty Application(C)}; \
 	bsp setlib -name xilpm;\
 	exec cp ../../$@/main.c      $@/src; \
 	exec cp ../../$@/rtc.c       $@/src; \

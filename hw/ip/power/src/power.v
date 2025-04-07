@@ -1,11 +1,10 @@
 ///////////////////////////////////////////////////////////////////////////////
-// Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+// Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 // SPDX-License-Identifier: MIT
 ///////////////////////////////////////////////////////////////////////////////
 
 module power (
      input rst_out0,
-     input rst_out1,
      input system_clk
 );
 

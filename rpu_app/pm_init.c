@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 #include "pm_api_sys.h"
@@ -71,7 +71,7 @@ XStatus PmInit(XScuGic *const GicInst, XIpiPsu *const IpiInst)
 
 #if defined(__arm__) && defined(versal)
 	/* TTC_3 is required for sleep functionality */
-	Status = XPm_RequestNode(PM_DEV_TTC_2, PM_CAP_ACCESS, 0U, 0U);
+	Status = XPm_RequestNode(PM_DEV_TTC_3, PM_CAP_ACCESS, 0U, 0U);
 	if (XST_SUCCESS != Status) {
 		xil_printf("XPm_RequestNode of TTC_3 is failed with error: %d\r\n", Status);
 		goto done;

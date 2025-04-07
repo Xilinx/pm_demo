@@ -1,5 +1,5 @@
 /******************************************************************************
-* Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+* Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 * SPDX-License-Identifier: MIT
 ******************************************************************************/
 #include "pm_init.h"
@@ -46,7 +46,7 @@ extern void __attribute__((weak)) * _vector_table;
 #define DELAY_COUNT(x)				((x) * (u64)XPAR_CPU_CORTEXR5_0_CPU_CLK_FREQ_HZ / 10)
 
 /* Calculate latency from counter ticks to microseconds */
-#define CALCULATE_LATENCY(x)		((x) / (CountsPerSec / 1000000))
+#define CALCULATE_LATENCY(x)		((u32)((x) / (CountsPerSec / 1000000U)))
 
 #define SYNC_APU_MASK				(0x000000FFU)
 #define SYNC_RPU_MASK				(0x0000FF00U)
@@ -333,19 +333,19 @@ static XStatus MeasureLatency(void)
 	fpd_on_avg = fpd_on_total / IterationCnt;
 #endif
 
-	xil_printf("RPU: Request Suspend Latency of Linux in micro seconds: Min: %ld, Max: %ld, Avg: %ld\r\n",
+	xil_printf("RPU: Request Suspend Latency of Linux in micro seconds: Min: %u, Max: %u, Avg: %u\r\n",
 			   susp_min, susp_max, susp_avg);
-	xil_printf("RPU: FPD OFF Latency in micro seconds: Min: %ld, Max: %ld, Avg: %ld\r\n",
+	xil_printf("RPU: FPD OFF Latency in micro seconds: Min: %u, Max: %u, Avg: %u\r\n",
 			   fpd_off_min, fpd_off_max, fpd_off_avg);
 
 #if !defined(versal)
-	xil_printf("RPU: FPD ON Latency in micro seconds: Min: %ld, Max: %ld, Avg: %ld\r\n",
+	xil_printf("RPU: FPD ON Latency in micro seconds: Min: %u, Max: %u, Avg: %u\r\n",
 			   fpd_on_min, fpd_on_max, fpd_on_avg);
 #endif
 
-	xil_printf("RPU: Wakeup Latency of APU0 in micro seconds: Min: %ld, Max: %ld, Avg: %ld\r\n",
+	xil_printf("RPU: Wakeup Latency of APU0 in micro seconds: Min: %u, Max: %u, Avg: %u\r\n",
 			   pu0_wake_min, pu0_wake_max, pu0_wake_avg);
-	xil_printf("RPU: Wakeup Latency of Linux in micro seconds: Min: %ld, Max: %ld, Avg: %ld\r\n",
+	xil_printf("RPU: Wakeup Latency of Linux in micro seconds: Min: %u, Max: %u, Avg: %u\r\n",
 			   wake_min, wake_max, wake_avg);
 	xil_printf("RPU: Latency Measurement Done\r\n");
 
@@ -537,7 +537,7 @@ int main(void)
 			goto done;
 		}
 		PlLatency = CALCULATE_LATENCY(tEnd - tStart);
-		xil_printf("RPU: PL ON Latency in micro seconds: %ld\r\n", PlLatency);
+		xil_printf("RPU: PL ON Latency in micro seconds: %u\r\n", PlLatency);
 #endif
 	} else {
 		xil_printf("RPU: Invalid Boot Status\r\n");
@@ -558,7 +558,7 @@ int main(void)
 		goto done;
 	}
 	PlLatency = CALCULATE_LATENCY(tEnd - tStart);
-	xil_printf("RPU: PL OFF Latency in micro seconds: %ld\r\n", PlLatency);
+	xil_printf("RPU: PL OFF Latency in micro seconds: %u\r\n", PlLatency);
 #endif
 
 	SyncWaitForReady(SYNC_APU_READY);

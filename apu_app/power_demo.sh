@@ -1,10 +1,14 @@
 ###############################################################################
-# Copyright (C) 2023, Advanced Micro Devices, Inc.  All rights reserved.
+# Copyright (C) 2023 - 2025, Advanced Micro Devices, Inc.  All rights reserved.
 # SPDX-License-Identifier: MIT
 ###############################################################################
-DelayVal=30
-IterationCnt=1
+#! /bin/sh
 
+sleep 10
+
+DelayVal=20
+IterationCnt=1
+dmesg -n 1
 if [ -d "/sys/firmware/devicetree/base/firmware/zynqmp-firmware" ]; then
     Interface="zynqmp"
     echo "APU: ZynqMP interface"
@@ -74,22 +78,24 @@ fi
 if [ $Interface != "zynqmp" ]; then
     # load partial pdi
     fpgautil -R
-    fpgautil -b /usr/bin/partial.pdi
+    fpgautil -o /usr/bin/aie.dtbo &>/dev/null
+    xrt-smi program -u /usr/bin/aie-matrix-multiplication.xclbin &>/dev/null
+    xrt-smi advanced --aie-clock -s 1250000000 &>/dev/null
+    printf "\nAPU: ************** APU, RPU, PL, AIE in full power mode ***************\n"
+    yes > /dev/null &
+    yes > /dev/null &
+    aie-matrix-multiplication &>/dev/null
 fi
 
-yes > /dev/null &
-yes > /dev/null &
 if [ $Interface == "zynqmp" ]; then
+    printf "\nAPU: ************** APU, RPU, PL in full power mode *******************\n"
     yes > /dev/null &
     yes > /dev/null &
+    printf "APU: Sleeping ${DelayVal} seconds...\n\n"
+    sleep ${DelayVal}
 fi
 
-printf "\nAPU: **************** APU, RPU, PL in full power mode ******************\n"
-#printf "APU: Sleeping ${DelayVal} seconds...\n\n"
-#sleep ${DelayVal}
 
-printf "APU: Sleeping ${DelayVal} seconds...\n\n"
-sleep ${DelayVal}
 
 if [ $Interface == "zynqmp" ]; then
     echo "APU: Latency to low power PL domain"
@@ -99,7 +105,31 @@ if [ $Interface == "zynqmp" ]; then
     echo $pggs_val > ${PGGS_INTERFACE}
 else
     echo "APU: Lowering PL domain power"
-    time (fpgautil -R && fpgautil -b /usr/bin/greybox.pdi)
+    xrt-smi reset --force -d &>/dev/null
+    xrt-smi program -u /usr/bin/aie-matrix-multiplication.xclbin  &>/dev/null
+    xrt-smi advanced --aie-clock -s 625000000  &>/dev/null
+    printf "\nAPU: ******* APU and RPU full load, PL, AIE Half Freq. (625MHz) ********\n"
+    printf "APU: Sleeping ${DelayVal} seconds...\n\n"
+    aie-matrix-multiplication  &>/dev/null
+fi
+
+if [ $Interface != "zynqmp" ]; then
+    printf "\nAPU: ********* APU and RPU full load, PL, AIE clock gated  ************\n"
+    printf "APU: Sleeping ${DelayVal} seconds...\n\n"
+    sleep ${DelayVal}
+fi
+
+if [ $Interface == "zynqmp" ]; then
+    echo "APU: Latency to low power PL domain"
+    ggs_val=$(cat ${PGGS_INTERFACE})
+    pggs_val=$(($ggs_val & 0xFFFFFF00 | 0x11))
+    pggs_val=$(printf '%x\n' $pggs_val)
+    echo $pggs_val > ${PGGS_INTERFACE}
+else
+    echo "APU: Lowering PL domain power"
+    xrt-smi reset --force -d &>/dev/null
+    fpgautil -b /usr/bin/greybox.pdi &>/dev/null
+    fpgautil -R
 fi
 
 printf "\nAPU: ************** APU and RPU full load, PL in low power *************\n"
@@ -250,16 +280,25 @@ if [ $Interface == "zynqmp" ]; then
     pggs_val=$(($ggs_val & 0xFFFFFF00 | 0x12))
     pggs_val=$(printf '%x\n' $pggs_val)
     echo $pggs_val > ${PGGS_INTERFACE}
+printf "\nAPU: **************** APU, RPU and PL in high power ********************\n"
 else
     echo "APU: Powering on PL domain"
     # load partial pdi
-    time (fpgautil -R && fpgautil -b /usr/bin/partial.pdi)
+#    time (fpgautil -R && fpgautil -b /usr/bin/partial.pdi)
+    fpgautil -R
+    fpgautil -o /usr/bin/aie.dtbo &>/dev/null
+    xrt-smi program -u /usr/bin/aie-matrix-multiplication.xclbin &>/dev/null
+    xrt-smi advanced --aie-clock -s 1250000000 &>/dev/null
+    printf "\nAPU: ************** APU, RPU, PL, AIE in full power mode ***************\n"
+    yes > /dev/null &
+    yes > /dev/null &
+    aie-matrix-multiplication &>/dev/null
 fi
 
-printf "\nAPU: **************** APU, RPU and PL in high power ********************\n"
 printf "APU: Sleeping ${DelayVal} seconds...\n\n"
 sleep ${DelayVal}
 
 killall yes
 echo "APU: Power demo application completed successfully!"
 
+dmesg -n 7
